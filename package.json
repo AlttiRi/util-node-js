@@ -1,7 +1,7 @@
 {
   "name": "@alttiri/util-node-js",
   "version": "1.0.0",
-  "description": "Sleep function with setImmediate",
+  "description": "Sleep util function",
   "main": "index.js",
   "keywords": [
     "sleep",
