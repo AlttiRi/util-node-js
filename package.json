@@ -18,6 +18,6 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@alttiri/util-js": "1.0.0"
+    "@alttiri/util-js": "^1.0.0"
   }
 }
