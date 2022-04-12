@@ -4,8 +4,7 @@
   "description": "Sleep util function",
   "main": "index.js",
   "keywords": [
-    "sleep",
-    "setImmediate"
+    "sleep"
   ],
   "scripts": {
     "deploy": "npm publish"
