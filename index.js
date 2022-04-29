@@ -1,1 +1,3 @@
-export {sleep} from "@alttiri/util-js";
+export * from "@alttiri/util-js";
+
+export * from "./src/console.js";
