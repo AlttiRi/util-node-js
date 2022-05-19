@@ -2,7 +2,7 @@
 
 Create `.npmrc` file with the follow content `@alttiri:registry=https://npm.pkg.github.com`:
 ```bash
-echo @alttiri:registry=https://npm.pkg.github.com > .npmrc
+echo @alttiri:registry=https://npm.pkg.github.com >> .npmrc
 ```
 
 then run
