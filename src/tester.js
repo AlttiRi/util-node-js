@@ -30,26 +30,28 @@ export class Tester {
         const quotes = result.toString().match(/^\s|\s$/) || expected.toString().match(/^\s|\s$/);
         const q1 = quotes ? ANSI_GRAY("\"") : " ";
         const q2 = quotes ? ANSI_GRAY("\"") : "";
+        const colon = ANSI_GRAY(":");
         if (result === expected) {
             this.passed.push(name);
             if (!this.printSuccess) {
                 return;
             }
             console.log(ANSI_GREEN(`${prefix} Test ${name} passed`));
-            console.log(`Result   : ${q1}${result}${q2}`);
-            console.log(`Expected : ${q1}${result}${q2}`);
-            console.log("---");
+            console.log(`Expected  ${colon} ${q1}${result}${q2}`);
+            console.log(`Result    ${colon} ${q1}${result}${q2}`);
+            console.log(ANSI_GRAY("---"));
         } else {
             this.failed.push(name);
             console.log(ANSI_RED_BOLD(`${prefix} Test ${name} failed`));
-            console.log(`Result   : ${q1}${result}${q2}`);
-            console.log(`Expected : ${q1}${expected}${q2}`);
-            console.log("---");
+            console.log(`Expected  ${colon} ${q1}${expected}${q2}`);
+            console.log(`Result    ${colon} ${q1}${result}${q2}`);
+            console.log(ANSI_GRAY("---"));
         }
     }
     report() {
         console.log();
-        console.log(`Failed ${this.failed.length}`);
-        console.log(`Passed ${this.passed.length}`);
+        const c = this.failed.length ? ANSI_RED_BOLD : ANSI_GRAY;
+        console.log(c(`Failed: ${this.failed.length.toString().padStart(3)}`));
+        console.log(  `Passed: ${this.passed.length.toString().padStart(3)}`);
     }
 }
