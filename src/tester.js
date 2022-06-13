@@ -53,10 +53,3 @@ export class Tester {
         console.log(`Passed ${this.passed.length}`);
     }
 }
-
-const {eq, report} = new Tester().destructible();
-
-eq("ab0", Math.max(1, 2), 2);
-eq("ab1", " qwe  ".trim(), "qwe");
-
-report();
