@@ -25,12 +25,9 @@ export class Tester {
     }
     eq(name, result, expected) {
         this.num++;
-        let e = new Error();
-        let s = e.stack;
-        let sp = s.split("\n");
-        let secnd = sp[2];
-        let match = secnd?.match(/\d+(?=:\d+$)/);
-        const line = match[0] || "";
+        const errorLines = new Error().stack.split("\n");
+        const match = errorLines[2]?.match(/\d+(?=:\d+$)/);
+        const line  = match?.[0] || "";
         const prefix = `[${this.num.toString().padStart(3)}][${line.padStart(4)}]`;
         const quotes = result.toString().match(/^\s|\s$/) || expected.toString().match(/^\s|\s$/);
         const q1 = quotes ? ANSI_GRAY("\"") : " ";
