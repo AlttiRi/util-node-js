@@ -25,7 +25,7 @@ export class Tester {
     }
     eq(name, result, expected) {
         this.num++;
-        const line = new Error().stack.split("\n")[2].match(/\d+(?=:\d+$)/)[0];
+        const line = new Error().stack.split("\n")[2]?.match(/\d+(?=:\d+$)/)[0] || "";
         const prefix = `[${this.num.toString().padStart(3)}][${line.padStart(4)}]`;
         const quotes = result.toString().match(/^\s|\s$/) || expected.toString().match(/^\s|\s$/);
         const q1 = quotes ? ANSI_GRAY("\"") : " ";
