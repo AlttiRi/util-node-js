@@ -1,8 +1,13 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Some Node.js util functions",
   "main": "index.js",
+  "files": [
+    "src",
+    "index.d.ts",
+    "index.js"
+  ],
   "types": "index.d.ts",
   "keywords": [
     "sleep",
