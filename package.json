@@ -27,6 +27,6 @@
     "registry": "https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@alttiri/util-js": "github:alttiri/util-js#semver:1.1.1"
+    "@alttiri/util-js": "github:alttiri/util-js#semver:2.0.0"
   }
 }
