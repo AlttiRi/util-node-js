@@ -1,5 +1,4 @@
-import {sleep} from "@alttiri/util-js/index.js";
-export {sleep};
+import * from "@alttiri/util-js";
 
 export * from "./src/console.js";
 export * from "./src/tester.js";
