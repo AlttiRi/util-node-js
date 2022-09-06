@@ -3,6 +3,7 @@
   "version": "1.4.0",
   "description": "Some Node.js util functions",
   "main": "index.js",
+  "types": "index.d.ts",
   "keywords": [
     "sleep",
     "color"
