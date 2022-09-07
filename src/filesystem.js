@@ -1,6 +1,7 @@
 import fs from "fs/promises";
 import path from "path";
 
+
 export function exists(path, followSymbol = true) {
     return (followSymbol ? fs.stat(path) : fs.lstat(path))
         .then(stats => true)
@@ -8,7 +9,7 @@ export function exists(path, followSymbol = true) {
 }
 
 /**
- * Is the passed sym link looped — if referrers to a parent directory.
+ * Is the passed symlink looped — if referrers to a parent directory.
  * @param {string} filepath
  * @return {Promise<boolean>}
  */
