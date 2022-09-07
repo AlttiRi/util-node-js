@@ -2,22 +2,12 @@
   "name": "@alttiri/util-node-js",
   "version": "1.4.2",
   "description": "Some Node.js util functions",
-  "main": "index.js",
-  "files": [
-    "src",
-    "index.d.ts",
-    "index.js"
-  ],
-  "types": "index.d.ts",
-  "keywords": [
-    "sleep",
-    "color"
-  ],
-  "scripts": {
-    "deploy": "npm publish"
-  },
+  "keywords": ["color"],
+  "homepage": "https://github.com/AlttiRi/util-node-js",
   "license": "MIT",
   "type": "module",
+  "files": ["src", "index.js"],
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/alttiri/util-node-js.git"
@@ -26,7 +16,7 @@
     "access": "public",
     "registry": "https://npm.pkg.github.com"
   },
-  "dependencies": {
-    "@alttiri/util-js": "github:alttiri/util-js#semver:2.0.0"
+  "scripts": {
+    "deploy": "npm publish"
   }
 }
