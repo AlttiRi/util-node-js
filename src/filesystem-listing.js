@@ -86,7 +86,7 @@ const defaultFileListingSetting = {
  * @return {AsyncGenerator<ListEntry>}
  */
 export async function *listFiles(settings = {}) {
-    settings = Object.assign(defaultFileListingSetting, settings);
+    settings = Object.assign({...defaultFileListingSetting}, settings);
     try {
         /** @type {import("fs/promises").Dirent[]} */
         const dirEntries = await fs.readdir(settings.filepath, { // can throw an error
