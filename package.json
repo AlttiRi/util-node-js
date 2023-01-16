@@ -3,7 +3,7 @@
   "version": "1.5.3",
   "description": "Some Node.js util functions",
   "keywords": ["color"],
-  "homepage": "https://github.com/AlttiRi/util-node-js",
+  "homepage": "https://github.com/alttiri/util-node-js",
   "license": "MIT",
   "type": "module",
   "files": ["src", "index.js"],
@@ -13,7 +13,8 @@
     "url": "https://github.com/alttiri/util-node-js.git"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "login":  "npm login",
