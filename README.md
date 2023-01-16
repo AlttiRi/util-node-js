@@ -23,11 +23,11 @@ npm install git+https://github.com/alttiri/util-node-js.git
 
 - **Based on SemVer:**
     ```bash
-    npm install git+https://github.com/alttiri/util-node-js.git#semver:1.5.2
+    npm install git+https://github.com/alttiri/util-node-js.git#semver:1.6.0
     ```
     Or add 
     ```
-    "@alttiri/util-node-js": "github:alttiri/util-node-js#semver:1.5.2"
+    "@alttiri/util-node-js": "github:alttiri/util-node-js#semver:1.6.0"
     ```
     as `dependencies` in `package.json` file.
     
