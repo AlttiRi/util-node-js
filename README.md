@@ -31,19 +31,19 @@ npm install git+https://github.com/alttiri/util-node-js.git
     ```
     as `dependencies` in `package.json` file.
     
-    See availables [tags](https://github.com/AlttiRi/util-node-js/tags).
+    See available [tags](https://github.com/AlttiRi/util-node-js/tags).
 
 - **Based on a commit hash:**
     ```bash
-    npm install git+ssh://git@github.com/alttiri/util-node-js.git#c62f105d7aa0778219d0083576c57fcb9ded633a
+    npm install git+https://git@github.com/alttiri/util-node-js.git#c62f105d7aa0778219d0083576c57fcb9ded633a
     ```
-    Or add 
+    Or add
     ```
     "@alttiri/util-node-js": "github:alttiri/util-node-js#c62f105d7aa0778219d0083576c57fcb9ded633a"
     ```
     as `dependencies` in `package.json` file.
     
-    See availables [commits hashes](https://github.com/AlttiRi/util-node-js/commits/master).
+    See available [commits hashes](https://github.com/AlttiRi/util-node-js/commits/master).
 
 
 
