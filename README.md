@@ -2,6 +2,12 @@
 
 ## Installation
 
+### NPM
+
+```bash
+npm i @alttiri/util-node-js
+```
+
 ### From GitHub Packages:
 To install you need fisrt to create `.npmrc` file with `@alttiri:registry=https://npm.pkg.github.com` content:
 ```bash

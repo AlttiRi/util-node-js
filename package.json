@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Some Node.js util functions",
   "keywords": ["color"],
   "homepage": "https://github.com/AlttiRi/util-node-js",
@@ -13,10 +13,10 @@
     "url": "https://github.com/alttiri/util-node-js.git"
   },
   "publishConfig": {
-    "access": "public",
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "scripts": {
+    "login":  "npm login",
     "deploy": "npm publish"
   }
 }
