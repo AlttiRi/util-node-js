@@ -1,6 +1,6 @@
 # util-node-js
 
-Some Node.js util function. 
+Some Node.js util functions. 
 
 Mostly it's a draft version for personal use.
 
