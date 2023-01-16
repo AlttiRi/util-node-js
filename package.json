@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "Some Node.js util functions",
   "keywords": ["color"],
   "homepage": "https://github.com/alttiri/util-node-js",
@@ -20,6 +20,7 @@
     "login-npm": "npm login --registry=https://registry.npmjs.org",
 
     "publish-ghp": "npm publish --registry=https://npm.pkg.github.com",
-    "publish-npm": "npm publish --registry=https://registry.npmjs.org"
+    "publish-npm": "npm publish --registry=https://registry.npmjs.org",
+    "publish": "npm run publish-ghp & npm run publish-npm"
   }
 }
