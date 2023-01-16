@@ -48,7 +48,7 @@ npm install git+https://github.com/alttiri/util-node-js.git
 
 
 ### From GitHub Packages:
-To install you need fisrt to create `.npmrc` file with `@alttiri:registry=https://npm.pkg.github.com` content:
+To install you need first to create `.npmrc` file with `@alttiri:registry=https://npm.pkg.github.com` content:
 ```bash
 echo @alttiri:registry=https://npm.pkg.github.com >> .npmrc
 ```
