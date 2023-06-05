@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "1.6.2",
+  "version": "1.7.0-dev.0",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color"
@@ -27,6 +27,8 @@
     "unpublish-npm": "npm unpublish @alttiri/util-node-js@1.2.3 --registry=https://registry.npmjs.org",
     "--": "",
     "login-npm": "npm login --registry=https://registry.npmjs.org",
-    "login-ghp": "npm login --registry=https://npm.pkg.github.com"
+    "login-ghp": "npm login --registry=https://npm.pkg.github.com",
+    "---": "",
+    "build-tester": "rollup ./src/tester.js --file ./dist/test.js --format iife --output.name tester"
   }
 }
