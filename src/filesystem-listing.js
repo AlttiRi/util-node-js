@@ -42,8 +42,8 @@
  * @property {Number}  [_currentDeep = 0]
  */
 
-import fs from "fs/promises";
-import path from "path";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 /**
  * @param {FileListingSetting} settings
