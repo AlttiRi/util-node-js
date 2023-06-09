@@ -1,15 +1,16 @@
-import {t} from "../src/tester-2.js";
 import {Tester} from "../src/tester.js";
 
 
-const {eq, report} = new Tester().destructible();
+const {eq, report, t} = new Tester().destructible();
 
 eq("first", "4545", "4545");
 eq("second", "asd", "asd");
-eq("??? bad", "asd", "asd1");
+eq("xxx bad", "asd", "asd1");
 report();
 
-
+console.log("---");
+console.log("---");
+console.log("---");
 
 t({
     result: 123,
