@@ -1,22 +1,59 @@
 import {ANSI_BLUE, ANSI_GRAY, ANSI_GREEN_BOLD, ANSI_RED_BOLD} from "./console-colors.js";
 
-export class Tester {
+
+type ConstructorOpts = {
+    printSuccess?: boolean,
+    testOnly?:     number[],
+    stackDeep?:    number,
+    autoReport?:   boolean,
+};
+
+type TestOpts = {
+    result: any,
+    expect: any,
+    stackDeep?: number,
+    name?: string,
+    printLink?: boolean,
+    autoReport?: boolean,
+    printSuccess?: boolean,
+};
+
+type TesterMethods = {
     /** @deprecated */
-    eq(name, result, expect) {
+    eq(name: string, result: any, expect: any): void,
+    t(opt: TestOpts): void,
+    report(): void,
+};
+
+
+
+export class Tester {
+    private readonly passed: number[];
+    private readonly failed: number[];
+    private readonly printSuccess: boolean;
+    private          num:    number;
+    private readonly testOnly:   number[];
+    private readonly stackDeep:  number;
+    private          timerId:    number | NodeJS.Timeout;
+    private readonly autoReport: boolean;
+
+    /** @deprecated */
+    eq(name: string, result: any, expect: any) {
         return this.t({
             result, expect, name,
             autoReport: false, stackDeep: 1, printSuccess: true,
         });
     }
-    destructible() {
+
+    destructible(): TesterMethods {
         return {
-            /** @deprecated */
             eq: this.eq.bind(this),
             t: this.t.bind(this),
             report: this.report.bind(this),
         }
     }
-    constructor(opt) {
+
+    constructor(opt?: ConstructorOpts) {
         const {
             printSuccess = false,
             testOnly = [],
@@ -34,10 +71,15 @@ export class Tester {
         this.autoReport = autoReport;
     }
 
-    t({result, expect, name = "", stackDeep, printLink = true, autoReport, printSuccess} = {}) {
+    t(opt: TestOpts): void {
+        const {
+            result, expect, stackDeep,
+            name = "",
+            printLink = true,
+            autoReport   = this.autoReport,
+            printSuccess = this.printSuccess,
+        } = opt;
         const {filename, lineNum} = getLineNum(2 + (stackDeep ?? this.stackDeep));
-        autoReport   = autoReport   ?? this.autoReport;
-        printSuccess = printSuccess ?? this.printSuccess;
 
         this.num++;
         if (this.testOnly.length && !this.testOnly.includes(this.num)) {
@@ -67,11 +109,11 @@ export class Tester {
         }
         autoReport && this.delayReport();
     }
-    delayReport() {
+    private delayReport(): void {
         clearTimeout(this.timerId)
         this.timerId = setTimeout(() => this.report(), 50);
     }
-    report() {
+    report(): void {
         console.log(ANSI_GRAY("---------------"));
         const COLOR_PASS = this.passed.length ? ANSI_GREEN_BOLD : ANSI_GRAY;
         const COLOR_FAIL = this.failed.length ? ANSI_RED_BOLD   : ANSI_GRAY;
@@ -86,7 +128,7 @@ export class Tester {
  * @return {{filename?: string, line?: string, column?: string}}
  */
 function getLineNum(stackDeep = 2) {
-    const errorLines = new Error().stack.split("\n");
+    const errorLines = new Error().stack!.split("\n");
     if (errorLines[0] === "Error") {
         errorLines.shift();
     }

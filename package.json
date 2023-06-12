@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "1.7.0-dev.1",
+  "version": "2.0.0-dev.0",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color"
@@ -9,10 +9,14 @@
   "license": "MIT",
   "type": "module",
   "files": [
-    "src",
-    "index.js"
+    "src/**/*.js",
+    "src/**/*.js.map",
+    "src/**/*.d.ts",
+    "index.js",
+    "index.js.map",
+    "index.d.ts"
   ],
-  "main": "index.js",
+  "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/alttiri/util-node-js.git"
@@ -20,15 +24,21 @@
   "publishConfig": {
     "access": "public"
   },
+  "devDependencies": {
+    "@types/node": "^18.15.3",
+    "typescript": "^5.1.3"
+  },
   "scripts": {
+    "compile": "tsc --build",
+    "compile-watch": "tsc --build -w",
+    "clean": "tsc --build --clean",
+    "-": "",
     "publish-npm": "npm publish --registry=https://registry.npmjs.org",
     "publish-ghp": "npm publish --registry=https://npm.pkg.github.com",
-    "-": "",
-    "unpublish-npm": "npm unpublish @alttiri/util-node-js@1.2.3 --registry=https://registry.npmjs.org",
     "--": "",
-    "login-npm": "npm login --registry=https://registry.npmjs.org",
-    "login-ghp": "npm login --registry=https://npm.pkg.github.com",
+    "unpublish-npm": "npm unpublish @alttiri/util-node-js@1.2.3 --registry=https://registry.npmjs.org",
     "---": "",
-    "build-tester": "rollup ./src/tester.js --file ./dist/test.js --format iife --output.name tester"
+    "login-npm": "npm login --registry=https://registry.npmjs.org",
+    "login-ghp": "npm login --registry=https://npm.pkg.github.com"
   }
 }

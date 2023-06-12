@@ -1,9 +1,8 @@
 const _ANSI_RESET = "\u001B[0m";
 
-/** @typedef {"black"|"red"|"green"|"yellow"|"blue"|"magenta"|"cyan"|"white"} ANSIColor */
+type ANSIColor = "black" | "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "white";
 
-/** @type {Map<ANSIColor, number>} */
-const ansiColorsMap = new Map([
+const ansiColorsMap: Map<ANSIColor, number> = new Map([
     ["black",   30],
     ["red",     31],
     ["green",   32],
@@ -13,6 +12,8 @@ const ansiColorsMap = new Map([
     ["cyan",    36],
     ["white",   37],
 ]);
+
+type ColoringFunc = (text: any) => string;
 
 /**
  * [ANSI_escape_code#SGR]{@link https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters}
@@ -26,26 +27,33 @@ const ansiColorsMap = new Map([
  * @example
  * const COL_VIOLET_DARK = getColoring("38;5;92");
  * console.log(COL_VIOLET_DARK("This text is 8-bit dark violet"));
- * @param {String} mode
- * @return {function(text: any): String}
+ *
+ * @param {string} mode
+ * @return {ColoringFunc}
  */
-export function getColoring(mode) {
-    return text => `\u001B[${mode}m${text}${_ANSI_RESET}`;
+export function getColoring(mode: string): ColoringFunc {
+    return (text: any) => `\u001B[${mode}m${text}${_ANSI_RESET}`;
 }
+
+
+export type AnsiColoringOpts = {
+    bright?: boolean,
+    bold?:   boolean
+};
 
 /**
  * @example
  * const ANSI_RED_BOLD = getAnsiColoring("RED", {bold: true});
  * console.log(ANSI_RED_BOLD("This text is bold red"));
- * @param {ANSIColor} [color="white"]
- * @param {Object} [opts]
- * @param {Boolean} [opts.bright=false]
- * @param {Boolean} [opts.bold=false]
- * @return {function(text: any): String}
+ * @param {ANSIColor?} color = "white"
+ * @param {AnsiColoringOpts?} opts
+ * @param {boolean?} opts.bright = false
+ * @param {boolean?} opts.bold   = false
+ * @return {ColoringFunc}
  */
-export function getAnsiColoring(color = "white", opts= {}) {
-    const {bright, bold} = Object.assign({bright: false, bold: false}, opts);
-    let num = ansiColorsMap.get(color);
+export function getAnsiColoring(color: ANSIColor = "white", opts: AnsiColoringOpts = {}): ColoringFunc {
+    const {bright = false, bold = false} = opts;
+    let num: number = ansiColorsMap.get(color)!;
     if (bright) {
         num += 60;
     }
