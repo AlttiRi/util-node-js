@@ -24,3 +24,16 @@ export {
 export {
     Tester
 } from "./src/tester.js";
+
+export {
+    exists, isSymLooped
+} from "./src/filesystem.js"
+
+export {
+    listFiles,
+} from "./src/filesystem-listing.js"
+
+export type {
+    FileListingSetting, FileListingSettingInit, IOError,
+    ListEntry, ListEntryError, ListEntryMix,
+} from "./src/filesystem-listing"

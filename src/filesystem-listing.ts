@@ -31,15 +31,15 @@ export interface IOError extends Error {
 }
 
 /** An entry of the listing of the content of a directory. */
-type ListEntry = {
+export type ListEntry = {
     path: string,
     dirent: Dirent,
 };
-type ListEntryError = {
+export type ListEntryError = {
     path: string,
     error: IOError,
 };
-type ListEntryMix = ListEntry | ListEntryError;
+export type ListEntryMix = ListEntry | ListEntryError;
 
 /** An entry of the listing of the content of a directory. */
 export type FileListingSetting = {
