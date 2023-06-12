@@ -5,7 +5,6 @@ let total = 0;
 for await (const listEntry of listFiles({
     yieldDirectories: true,
     // yieldErrors: true,
-    yieldErrors: false,
     breadthFirstRoot: true,
     filepath: "./"
 })) {
