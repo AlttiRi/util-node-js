@@ -42,21 +42,21 @@ export type ListEntryError = {
 export type ListEntryMix = ListEntry | ListEntryError;
 
 /** An entry of the listing of the content of a directory. */
-export type FileListingSetting = {
+export type FileListingSetting<YE extends boolean> = {
     /** filepath of a directory to list */
     filepath: string,          // process.cwd()
     recursively: boolean,      // true
     yieldDirectories: boolean, // false
-    yieldErrors: boolean,      // false
+    yieldErrors: YE,           // false
     /** travel strategy */
     depthFirst: boolean,       // true
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
     breadthFirstRoot: boolean, // false
     _currentDeep: number,      // 0
 };
-export type FileListingSettingInit = Partial<FileListingSetting>;
+export type FileListingSettingInit<YE extends boolean> = Partial<FileListingSetting<YE>>;
 
-const defaultFileListingSetting: FileListingSetting = {
+const defaultFileListingSetting: FileListingSetting<false> = {
     filepath:         process.cwd(),
     recursively:      true,
     yieldDirectories: false,
@@ -68,31 +68,36 @@ const defaultFileListingSetting: FileListingSetting = {
     // followSymbol: false,  // [unused] // if a loop? // if other hard drive? //
 };
 
-function toListEntry(dirEntry: Dirent, settings: FileListingSetting): ListEntry {
+
+function toListEntry(dirEntry: Dirent, settings: FileListingSetting<boolean>): ListEntry {
     const entryFilepath = path.resolve(settings.filepath, dirEntry.name);
     return {
         path: entryFilepath,
         dirent: dirEntry
     };
 }
-function toListEntryError(error: IOError, settings: FileListingSetting): ListEntryError {
+function toListEntryError(error: IOError, settings: FileListingSetting<true>): ListEntryError {
     return {
         path: settings.filepath,
         error
     };
 }
 
+
+export function listFiles(initSettings: FileListingSettingInit<true>): AsyncGenerator<ListEntryMix>;
+export function listFiles(initSettings: FileListingSettingInit<false>): AsyncGenerator<ListEntry>;
+
 /**
  * Not follows symlinks.
  * May return an entry with readdir error (entry type is folder) if `yieldErrors` is `true`.
  */
-export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryMix> {
-    const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
+export async function *listFiles(initSettings: FileListingSettingInit<boolean> = {}): AsyncGenerator<ListEntryMix> {
+    const settings: FileListingSetting<boolean> = Object.assign({...defaultFileListingSetting}, initSettings);
     yield *_listFiles(settings);
 }
 
 
-async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEntryMix> {
+async function *_listFiles(settings: FileListingSetting<boolean>): AsyncGenerator<ListEntryMix> {
     try {
         const dirEntries: Dirent[] = await fs.readdir(settings.filepath, { // can throw an error
             withFileTypes: true
@@ -109,12 +114,12 @@ async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEnt
         }
     } catch (error) {
         if (settings.yieldErrors) {
-            yield toListEntryError(error, settings);
+            yield toListEntryError(error, settings as FileListingSetting<true>);
         }
     }
 }
 
-async function *depthFirstList(settings: FileListingSetting, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
+async function *depthFirstList(settings: FileListingSetting<boolean>, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
     for (const listEntry of listEntries) {
         if (!listEntry.dirent.isDirectory()) {
             yield listEntry;
@@ -131,7 +136,7 @@ async function *depthFirstList(settings: FileListingSetting, listEntries: ListEn
 }
 
 /** Yields all directory's entries and only then goes to deep. */
-async function *depthBreadthFirstList(settings: FileListingSetting, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
+async function *depthBreadthFirstList(settings: FileListingSetting<boolean>, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
     let queue: ListEntry[] = [];
     const _currentDeep = settings._currentDeep + 1;
     for (const listEntry of listEntries) {
@@ -151,7 +156,7 @@ async function *depthBreadthFirstList(settings: FileListingSetting, listEntries:
     }
 }
 
-async function *breadthFirstList(settings: FileListingSetting, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
+async function *breadthFirstList(settings: FileListingSetting<boolean>, listEntries: ListEntry[]): AsyncGenerator<ListEntryMix> {
     let queue: ListEntry[] = [];
     let _currentDeep = settings._currentDeep;
 
