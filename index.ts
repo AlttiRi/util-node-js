@@ -35,5 +35,4 @@ export {
 
 export type {
     FileListingSetting, FileListingSettingInit, IOError,
-    ListEntry, ListEntryError, ListEntryMix,
 } from "./src/filesystem-listing"
