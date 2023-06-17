@@ -70,16 +70,15 @@ export type ListEntryStatsExtended =
 function toListEntryStatsError(entry: ListEntryBase, err: IOError): ListEntryStats {
     if ("errors" in entry) {
         return {
-            path: entry.path,
+            ...entry,
             errors: {
-                dirent: entry.errors.dirent,
+                ...entry.errors,
                 stats: err
             }
         }
     } else {
         return {
-            path: entry.path,
-            dirent: entry.dirent,
+            ...entry,
             errors: {
                 stats: err
             }
@@ -99,6 +98,7 @@ export type FileListingSetting = {
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
     breadthFirstRoot: boolean, // false
     _currentDeep: number,      // 0
+    stats: boolean,            // true
 };
 export type FileListingSettingInit = Partial<FileListingSetting>;
 
@@ -110,6 +110,7 @@ const defaultFileListingSetting: FileListingSetting = {
     depthFirst:       true,
     breadthFirstRoot: false,
     _currentDeep:     0,
+    stats:            true,
     // yieldRoot: true, // todo
     // maxDeep: 0, // todo
     // followSymbol: false,  // [unused] // if a loop? // if other hard drive? //
@@ -133,14 +134,23 @@ function toListEntryDirentError(error: IOError, settings: FileListingSetting): L
 }
 
 
+export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBase>;
+export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<ListEntryStats>;
+
 /**
  * Not follows symlinks.
  * May return an entry with readdir error (entry type is folder) if `yieldErrors` is `true`.
  */
 export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBase> {
     const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
-    yield *_listFiles(settings);
+    if (settings.stats) {
+        yield *_listFilesWithStat(settings);
+    } else {
+        yield *_listFiles(settings);
+    }
 }
+
+
 
 async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEntryBase> {
     try {
@@ -251,16 +261,13 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
     }
 }
 
-
-
-
-export async function *listFilesWithStat(conf: FileListingSettingInit): AsyncGenerator<ListEntryStats> {
+export async function *_listFilesWithStat(settings: FileListingSetting): AsyncGenerator<ListEntryStats> {
     const mutex     = new Semaphore();
     const semaphore = new Semaphore(4);
     const queue = new AsyncBufferQueue<ListEntryStats>(256);
     void (async function startAsyncIterationAsync() {
         const countLatch = new CountLatch();
-        for await (const entry of listFiles(conf)) {
+        for await (const entry of _listFiles(settings)) {
             await semaphore.acquire();
             void (async function getStats() {
                 countLatch.countUp();
