@@ -35,8 +35,7 @@ export interface IOError extends Error {
 }
 
 type ErrorName = "dirent" | "stats" | "link";
-/** An entry of the listing of the content of a directory. */
-export type ListEntry = { // Template
+export type ListEntrySimplifiedTypeExample = {
     path: string,
     dirent?: Dirent,
     stats?: Stats,
@@ -45,10 +44,6 @@ export type ListEntry = { // Template
         [name in ErrorName]?: IOError
     },
 };
-// const a: ListEntry = {
-//
-// }
-
 
 export type LinkInfo = {
     pathTo: string,
@@ -126,7 +121,6 @@ const defaultFileListingSetting: FileListingSetting = {
     breadthFirstRoot: false,
     _currentDeep:     0,
     stats:            true,
-    // yieldRoot: true, // todo
     // maxDeep: 0, // todo
     // followSymbol: false,  // [unused] // if a loop? // if other hard drive? //
 };
