@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import {Stats} from "fs";
 
 
 export function exists(path: string, followSymbol = true): Promise<boolean> {
@@ -15,3 +16,35 @@ export async function isSymLooped(filepath: string): Promise<boolean> {
     return linkPathAbsolute.includes(dirname);
 }
 
+
+export type FileInfo = {
+    path: string,
+    stats: Stats,
+    link?: LinkInfo,
+};
+export type LinkInfo = {
+    pathTo: string,
+    content: string,
+};
+
+export async function getFileInfo(filepath: string): Promise<FileInfo> {
+    filepath = path.resolve(filepath);
+    const stats = await fs.lstat(filepath);
+
+    let link;
+    if (stats.isSymbolicLink()) {
+        const symContent = await fs.readlink(filepath);
+        const linkLocation = path.dirname(filepath);
+        const absolutePathTo = path.resolve(linkLocation, symContent);
+        link = {
+            pathTo: absolutePathTo,
+            content: symContent,
+        };
+    }
+
+    return {
+        path: filepath,
+        stats: stats,
+        ...(link ? {link} : {})
+    };
+}
