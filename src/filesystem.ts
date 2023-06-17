@@ -17,12 +17,12 @@ export async function isSymLooped(filepath: string): Promise<boolean> {
 }
 
 
-export type FileInfo = {
+type FileInfo = {
     path: string,
     stats: Stats,
     link?: LinkInfo,
 };
-export type LinkInfo = {
+type LinkInfo = {
     pathTo: string,
     content: string,
 };

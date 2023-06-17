@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
-import {listFiles} from "../src/filesystem-listing.js";
-import {getFileInfo} from "../src/filesystem.js";
+import {getFileInfo, listFiles} from "../index.js";
 
 console.log(await getFileInfo("C:\\Documents and Settings"));
 

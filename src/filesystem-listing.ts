@@ -34,14 +34,13 @@ export interface IOError extends Error {
     path:    string, // "C:\\System Volume Information"
 }
 
-type ErrorName = "dirent" | "stats" | "link";
-export type ListEntrySimplifiedTypeExample = {
+type ListEntrySimplifiedTypeExample = {
     path: string,
     dirent?: Dirent,
     stats?: Stats,
     link?: LinkInfo
     errors?: {
-        [name in ErrorName]?: IOError
+        [name in "dirent" | "stats" | "link"]?: IOError
     },
 };
 
