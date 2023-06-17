@@ -34,40 +34,55 @@ export interface IOError extends Error {
     path:    string, // "C:\\System Volume Information"
 }
 
-type ErrorName = "dirent" | "stats";
+type ErrorName = "dirent" | "stats" | "link";
 /** An entry of the listing of the content of a directory. */
 export type ListEntry = { // Template
     path: string,
     dirent?: Dirent,
     stats?: Stats,
+    link?: LinkInfo
     errors?: {
         [name in ErrorName]?: IOError
     },
 };
+// const a: ListEntry = {
+//
+// }
 
-export type ListEntryDirent = {
-    path: string,
-    dirent: Dirent,
+
+export type LinkInfo = {
+    pathTo: string,
+    content: string,
 }
 type DirentError = { dirent: IOError };
 type StatError   = { stats:  IOError };
+type LinkError   = { link:   IOError };
 export type ListEntryDirentError = {
     path: string,
     errors: DirentError,
 }
+export type ListEntryDirent = {
+    path: string,
+    dirent: Dirent,
+}
 export type ListEntryBase = ListEntryDirent | ListEntryDirentError;
 
-export type StatEntry = {stats: Stats};
-export type StatEntryError = {errors: StatError};
-export type StatEntryBase = StatEntry | StatEntryError;
-export type ListEntryStats = StatEntryBase & (ListEntryDirent | ListEntryDirentError);
-export type ListEntryStatsExtended =
-      {path: string, dirent: Dirent, stats: Stats}
-    | {path: string, dirent: Dirent, errors: { stats: IOError }}
-    | {path: string, stats: Stats, errors: { dirent: IOError }}
-    | {path: string, errors: { dirent: IOError, stats: IOError }}
 
-function toListEntryStatsError(entry: ListEntryBase, err: IOError): ListEntryStats {
+export type LinkEntry = { link: LinkInfo };
+export type LinkEntryError = { errors: LinkError };
+export type LinkEntryBase = LinkEntry | LinkEntryError;
+export type ListEntryDirentLink = ListEntryDirent & LinkEntryBase;
+
+export type ListEntryBaseEx = ListEntryBase | ListEntryDirentLink;
+
+export type StatEntry = { stats: Stats };
+export type StatEntryError = { errors: StatError };
+export type StatEntryBase = StatEntry | StatEntryError;
+export type ListEntryStats = StatEntryBase & ListEntryBaseEx;
+
+
+
+function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryStats {
     if ("errors" in entry) {
         return {
             ...entry,
@@ -75,14 +90,14 @@ function toListEntryStatsError(entry: ListEntryBase, err: IOError): ListEntrySta
                 ...entry.errors,
                 stats: err
             }
-        }
+        } as StatEntryError & (ListEntryBase | ListEntryBaseEx);
     } else {
         return {
             ...entry,
             errors: {
                 stats: err
             }
-        }
+        };
     }
 }
 
@@ -134,14 +149,14 @@ function toListEntryDirentError(error: IOError, settings: FileListingSetting): L
 }
 
 
-export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBase>;
+export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBaseEx>;
 export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<ListEntryStats>;
 
 /**
  * Not follows symlinks.
  * May return an entry with readdir error (entry type is folder) if `yieldErrors` is `true`.
  */
-export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBase> {
+export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBaseEx> {
     const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
     if (settings.stats) {
         yield *_listFilesWithStat(settings);
@@ -151,13 +166,45 @@ export async function *listFiles(initSettings: FileListingSettingInit = {}): Asy
 }
 
 
+async function linkInfo(entry: ListEntryDirent): Promise<ListEntryDirent | ListEntryDirentLink> {
+    if (!entry.dirent.isSymbolicLink()) {
+        return entry;
+    }
+    try {
+        const symContent = await fs.readlink(entry.path);
+        const linkLocation = path.dirname(entry.path);
+        const absolutePathTo = path.resolve(linkLocation, symContent);
+        return {
+            ...entry,
+            link: {
+                pathTo: absolutePathTo,
+                content: symContent,
+            }
+        };
+    } catch (err) {
+        return {
+            ...entry,
+            errors: {
+                link: err
+            }
+        };
+    }
+}
 
-async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEntryBase> {
+async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEntryBaseEx> {
     try {
         const dirEntries: Dirent[] = await fs.readdir(settings.filepath, { // can throw an error
             withFileTypes: true
         });
-        const listEntries: ListEntryDirent[] = dirEntries.map(dirEntry => toListEntryDirent(dirEntry, settings));
+        const listEntries: (ListEntryDirent | ListEntryDirentLink)[] = [];
+        for (const dirEntry of dirEntries) {
+            const entryDirent: ListEntryDirent = toListEntryDirent(dirEntry, settings);
+            if (entryDirent.dirent.isSymbolicLink()) {
+                listEntries.push(await linkInfo(entryDirent));
+            } else {
+                listEntries.push(entryDirent);
+            }
+        }
         if (settings.depthFirst) {
             if (settings.breadthFirstRoot && settings._currentDeep === 0) {
                 yield *depthBreadthFirstList(settings, listEntries);
