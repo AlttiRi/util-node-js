@@ -84,7 +84,7 @@ function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryS
                 ...entry.errors,
                 stats: err
             }
-        } as StatEntryError & (ListEntryBase | ListEntryBaseEx);
+        } as ListEntryStats;
     } else {
         return {
             ...entry,
@@ -101,6 +101,7 @@ export type FileListingSetting = {
     filepath: string,          // process.cwd()
     recursively: boolean,      // true
     yieldDirectories: boolean, // false
+    /** yield entries with the read dir error */
     yieldErrors: boolean,      // false
     /** travel strategy */
     depthFirst: boolean,       // true
