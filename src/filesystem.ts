@@ -31,20 +31,26 @@ export async function getFileInfo(filepath: string): Promise<FileInfo> {
     filepath = path.resolve(filepath);
     const stats = await fs.lstat(filepath);
 
-    let link;
     if (stats.isSymbolicLink()) {
-        const symContent = await fs.readlink(filepath);
-        const linkLocation = path.dirname(filepath);
-        const absolutePathTo = path.resolve(linkLocation, symContent);
-        link = {
-            pathTo: absolutePathTo,
-            content: symContent,
+        return {
+            path: filepath,
+            stats,
+            link: await readLink(filepath),
+        };
+    } else {
+        return {
+            path: filepath,
+            stats,
         };
     }
+}
 
+export async function readLink(filepath: string) {
+    const symContent = await fs.readlink(filepath);
+    const linkLocation = path.dirname(filepath);
+    const absolutePathTo = path.resolve(linkLocation, symContent);
     return {
-        path: filepath,
-        stats: stats,
-        ...(link ? {link} : {})
+        pathTo: absolutePathTo,
+        content: symContent,
     };
 }

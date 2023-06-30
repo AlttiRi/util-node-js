@@ -1,9 +1,11 @@
 import crypto from "node:crypto";
 import {getFileInfo, listFiles} from "../index.js";
 
-console.log(await getFileInfo("C:\\Documents and Settings"));
+// console.log(await getFileInfo("C:\\Documents and Settings"));
+// C:\System Volume Information
 
 console.time("listFiles");
+// const filepath = "C:\\System Volume Information";
 const filepath = "../";
 let total = 0;
 let count = 0;
@@ -12,7 +14,7 @@ const hasher = crypto.createHash("md5");
 for await (const entry of listFiles({
     filepath,
     yieldDirectories: true,
-    // depthFirst: false,
+    depthFirst: false,
     // stats: false
 })) {
     count++;
@@ -22,26 +24,28 @@ for await (const entry of listFiles({
     }
 
     // console.log(entry.path);
+
+    if ("errors" in entry)
+        console.log(entry);
     if (skipLog) {
         continue;
     }
 
-    // console.log("---", entry.path);
+    console.log("---", entry.path);
+    console.log(entry.dirent.name);
+
     if (!("errors" in entry)) {
         console.log(entry.path);
+        console.log(entry.dirent.name);
         if ("link" in entry) {
             console.log(entry.link.content);
         }
     }
+
     if ("stats" in entry) {
-        total += entry.stats.size;
+        console.log(entry.stats.size);
     } else {
         console.log(entry.errors.stats.message);
-        if ("dirent" in entry) {
-            console.log(entry.dirent.name);
-        } else {
-            console.log(entry.errors.stats.name);
-        }
     }
 }
 console.log({total, count});

@@ -4,6 +4,7 @@ import path from "node:path";
 import {Stats} from "fs";
 import {CountLatch, Semaphore} from "@alttiri/util-js";
 import {AsyncBufferQueue} from "./util.js";
+import {readLink} from "./filesystem.js";
 
 /**
  * The error object that happens while scanning.
@@ -40,7 +41,7 @@ type ListEntrySimplifiedTypeExample = {
     stats?: Stats,
     link?: LinkInfo
     errors?: {
-        [name in "dirent" | "stats" | "link"]?: IOError
+        [name in "readdir" | "stats" | "readlink"]?: IOError
     },
 };
 
@@ -48,12 +49,13 @@ export type LinkInfo = {
     pathTo: string,
     content: string,
 }
-type DirentError = { dirent: IOError };
-type StatError   = { stats:  IOError };
-type LinkError   = { link:   IOError };
+type DirError  = { readdir:  IOError };
+type StatError = { stats:    IOError };
+type LinkError = { readlink: IOError };
 export type ListEntryDirentError = {
     path: string,
-    errors: DirentError,
+    dirent: Dirent,
+    errors: DirError,
 }
 export type ListEntryDirent = {
     path: string,
@@ -74,6 +76,106 @@ export type StatEntryError = { errors: StatError };
 export type StatEntryBase = StatEntry | StatEntryError;
 export type ListEntryStats = StatEntryBase & ListEntryBaseEx;
 
+
+
+const map = new Map<Object, Dirent[]>();
+async function getRootEntry(filepath: string): Promise<ListEntryStats> {
+    let dirents: Dirent[] = [];
+    filepath = path.resolve(filepath);
+    let stats: Stats;
+
+    try {
+        stats = await fs.lstat(filepath);
+    } catch (err) {
+        let direntDummy = dummyDirent(filepath);
+        let errors: StatError | StatError & DirError = {
+            stats: err as IOError,
+        };
+        try {
+            dirents = await fs.readdir(filepath, {withFileTypes: true});
+            direntDummy = dummyDirent(filepath, true);
+        } catch (err) {
+            errors = {
+                ...errors,
+                readdir: err as IOError
+            };
+        }
+        const result: ListEntryStats =  {
+            path: filepath,
+            dirent: direntDummy,
+            errors,
+        };
+        if (dirents.length) {
+            map.set(result, dirents);
+        }
+
+        return result;
+    }
+
+    const direntLike = direntFromStats(stats, filepath);
+    let result: ListEntryStats = {
+        path: filepath,
+        dirent: direntLike,
+        stats,
+    };
+    if (stats.isDirectory()) {
+        try {
+            dirents = await fs.readdir(filepath, {withFileTypes: true});
+        } catch (err) {
+            result = {
+                ...result,
+                errors: {
+                    readdir: err as IOError
+                }
+            };
+        }
+    } else
+    if (stats.isSymbolicLink()) {
+        try {
+            const link: LinkInfo = await readLink(filepath);
+            result = {
+                ...result,
+                link,
+            }
+        } catch (err) {
+            result = {
+                ...result,
+                errors: {
+                    readlink: err as IOError,
+                }
+            }
+        }
+    }
+    if (dirents.length) {
+        map.set(result, dirents);
+    }
+    return result;
+}
+
+function direntFromStats(stats: Stats, filepath: string) {
+    return new Proxy({
+        name: path.basename(filepath),
+        path: filepath,
+        [Symbol.toStringTag]: "DirentLike",
+    }, {
+        get(target: any, property: keyof Stats) {
+            if (property in stats) {
+                return stats[property];
+            }
+            return target[property];
+        }
+    }) as Dirent;
+}
+
+function dummyDirent(filepath: string, isDir = false) {
+    const direntDummy = new Dirent();
+    direntDummy.name = path.basename(filepath);
+    (direntDummy as any).path = filepath;
+    if (isDir) {
+        direntDummy.isDirectory = () => true;
+    }
+    return direntDummy;
+}
 
 
 function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryStats {
@@ -101,8 +203,6 @@ export type FileListingSetting = {
     filepath: string,          // process.cwd()
     recursively: boolean,      // true
     yieldDirectories: boolean, // false
-    /** yield entries with the read dir error */
-    yieldErrors: boolean,      // false
     /** travel strategy */
     depthFirst: boolean,       // true
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
@@ -116,13 +216,13 @@ const defaultFileListingSetting: FileListingSetting = {
     filepath:         process.cwd(),
     recursively:      true,
     yieldDirectories: false,
-    yieldErrors:      false,
     depthFirst:       true,
     breadthFirstRoot: false,
     _currentDeep:     0,
     stats:            true,
     // maxDeep: 0, // todo
-    // followSymbol: false,  // [unused] // if a loop? // if other hard drive? //
+    // followSymbol: false,  // if a loop? // if other hard drive? //
+    // yieldErrors:  true,   // does it need?
 };
 
 
@@ -133,14 +233,6 @@ function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): List
         dirent: dirEntry
     };
 }
-function toListEntryDirentError(error: IOError, settings: FileListingSetting): ListEntryDirentError {
-    return {
-        path: settings.filepath,
-        errors: {
-            dirent: error
-        }
-    };
-}
 
 
 export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBaseEx>;
@@ -148,14 +240,20 @@ export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<
 
 /**
  * Not follows symlinks.
- * May return an entry with readdir error (entry type is folder) if `yieldErrors` is `true`.
  */
 export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBaseEx> {
     const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
+    const rootEntry: ListEntryStats = await getRootEntry(settings.filepath);
+
+    // yield rootEntry;
+    // if (!rootEntry.dirent.isDirectory()/* || !rootEntry.dirents.length*/) {
+    //     return;
+    // }
+
     if (settings.stats) {
-        yield *_listFilesWithStat(settings);
+        yield *_listFilesWithStat(settings, rootEntry);
     } else {
-        yield *_listFiles(settings);
+        yield *_listFiles(settings, rootEntry);
     }
 }
 
@@ -179,39 +277,60 @@ async function linkInfo(entry: ListEntryDirent): Promise<ListEntryDirent | ListE
         return {
             ...entry,
             errors: {
-                link: err
+                readlink: err
             }
         };
     }
 }
 
-async function *_listFiles(settings: FileListingSetting): AsyncGenerator<ListEntryBaseEx> {
-    try {
-        const dirEntries: Dirent[] = await fs.readdir(settings.filepath, { // can throw an error
-            withFileTypes: true
-        });
-        const listEntries: (ListEntryDirent | ListEntryDirentLink)[] = [];
-        for (const dirEntry of dirEntries) {
-            const entryDirent: ListEntryDirent = toListEntryDirent(dirEntry, settings);
-            if (entryDirent.dirent.isSymbolicLink()) {
-                listEntries.push(await linkInfo(entryDirent));
-            } else {
-                listEntries.push(entryDirent);
-            }
+function toListEntryDirentError(error: IOError, listEntry: ListEntryDirent): ListEntryDirentError {
+    return {
+        ...listEntry,
+        errors: {
+            readdir: error
         }
-        if (settings.depthFirst) {
-            if (settings.breadthFirstRoot && settings._currentDeep === 0) {
-                yield *depthBreadthFirstList(settings, listEntries);
-            } else {
-                yield *depthFirstList(settings, listEntries);
+    };
+}
+
+async function direntsToEntries(dirents: Dirent[], settings: FileListingSetting): Promise<(ListEntryDirent | ListEntryDirentLink)[]> {
+    const listEntries: (ListEntryDirent | ListEntryDirentLink)[] = [];
+    for (const dirEntry of dirents) {
+        const entryDirent: ListEntryDirent = toListEntryDirent(dirEntry, settings);
+        if (entryDirent.dirent.isSymbolicLink()) {
+            listEntries.push(await linkInfo(entryDirent));
+        } else
+        if (entryDirent.dirent.isDirectory()) {
+            try {
+                const dirEntries: Dirent[] = await fs.readdir(entryDirent.path, {withFileTypes: true});
+                listEntries.push(entryDirent);
+                map.set(entryDirent, dirEntries);
+            } catch (error) {
+                const errorEntry = toListEntryDirentError(error, entryDirent);
+                listEntries.push(errorEntry);
             }
         } else {
-            yield *breadthFirstList(settings, listEntries);
+            listEntries.push(entryDirent);
         }
-    } catch (error) {
-        if (settings.yieldErrors) {
-            yield toListEntryDirentError(error, settings);
+    }
+    return listEntries;
+}
+
+async function *_listFiles(settings: FileListingSetting, listEntry: ListEntryDirent): AsyncGenerator<ListEntryBaseEx> {
+    const rootEntry = map.get(listEntry);
+    if (!rootEntry) {
+        throw "No entry's Dirents found!";
+    }
+    const listEntries = await direntsToEntries(rootEntry, settings);
+    map.delete(listEntry);
+
+    if (settings.depthFirst) {
+        if (settings.breadthFirstRoot && settings._currentDeep === 0) {
+            yield *depthBreadthFirstList(settings, listEntries);
+        } else {
+            yield *depthFirstList(settings, listEntries);
         }
+    } else {
+        yield *breadthFirstList(settings, listEntries);
     }
 }
 
@@ -225,7 +344,7 @@ async function *depthFirstList(settings: FileListingSetting, listEntries: ListEn
             }
             if (settings.recursively) {
                 const _currentDeep = settings._currentDeep + 1;
-                yield *_listFiles({...settings, _currentDeep, filepath: listEntry.path});
+                yield *_listFiles({...settings, _currentDeep, filepath: listEntry.path}, listEntry);
             }
         }
     }
@@ -248,7 +367,7 @@ async function *depthBreadthFirstList(settings: FileListingSetting, listEntries:
         }
     }
     for (const listEntry of queue) {
-        yield *_listFiles({...settings, _currentDeep, filepath: listEntry.path});
+        yield *_listFiles({...settings, _currentDeep, filepath: listEntry.path}, listEntry);
     }
 }
 
@@ -283,7 +402,7 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
                 filepath: entry.path,
                 recursively: false,
                 _currentDeep
-            })) {
+            }, entry)) {
                 if ("errors" in listEntry) {
                     yield listEntry;
                     continue;
@@ -302,13 +421,13 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
     }
 }
 
-export async function *_listFilesWithStat(settings: FileListingSetting): AsyncGenerator<ListEntryStats> {
+export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStats> {
     const mutex     = new Semaphore();
     const semaphore = new Semaphore(4);
     const queue = new AsyncBufferQueue<ListEntryStats>(256);
     void (async function startAsyncIterationAsync() {
         const countLatch = new CountLatch();
-        for await (const entry of _listFiles(settings)) {
+        for await (const entry of _listFiles(settings, listEntries)) {
             await semaphore.acquire();
             void (async function getStats() {
                 countLatch.countUp();
