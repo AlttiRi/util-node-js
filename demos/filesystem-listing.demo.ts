@@ -13,7 +13,7 @@ const skipLog = true;
 const hasher = crypto.createHash("md5");
 for await (const entry of listFiles({
     filepath,
-    yieldDirectories: true,
+    yieldDir: true,
     depthFirst: false,
     // stats: false
 })) {

@@ -202,7 +202,8 @@ export type FileListingSetting = {
     /** filepath of a directory to list */
     filepath: string,          // process.cwd()
     recursively: boolean,      // true
-    yieldDirectories: boolean, // false
+    yieldDir: boolean,         // false
+    yieldRoot: boolean,        // true
     /** travel strategy */
     depthFirst: boolean,       // true
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
@@ -215,7 +216,8 @@ export type FileListingSettingInit = Partial<FileListingSetting>;
 const defaultFileListingSetting: FileListingSetting = {
     filepath:         process.cwd(),
     recursively:      true,
-    yieldDirectories: false,
+    yieldDir:         false,
+    yieldRoot:        true,
     depthFirst:       true,
     breadthFirstRoot: false,
     _currentDeep:     0,
@@ -245,10 +247,11 @@ export async function *listFiles(initSettings: FileListingSettingInit = {}): Asy
     const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
     const rootEntry: ListEntryStats = await getRootEntry(settings.filepath);
 
-    // yield rootEntry;
-    // if (!rootEntry.dirent.isDirectory()/* || !rootEntry.dirents.length*/) {
-    //     return;
-    // }
+    if (settings.yieldRoot) {
+        if (!rootEntry.dirent.isDirectory() || settings.yieldDir) {
+            yield rootEntry;
+        }
+    }
 
     if (settings.stats) {
         yield *_listFilesWithStat(settings, rootEntry);
@@ -339,7 +342,7 @@ async function *depthFirstList(settings: FileListingSetting, listEntries: ListEn
         if (!listEntry.dirent.isDirectory()) {
             yield listEntry;
         } else {
-            if (settings.yieldDirectories) {
+            if (settings.yieldDir) {
                 yield listEntry;
             }
             if (settings.recursively) {
@@ -358,7 +361,7 @@ async function *depthBreadthFirstList(settings: FileListingSetting, listEntries:
         if (!listEntry.dirent.isDirectory()) {
             yield listEntry;
         } else {
-            if (settings.yieldDirectories) {
+            if (settings.yieldDir) {
                 yield listEntry;
             }
             if (settings.recursively) {
@@ -380,7 +383,7 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
             if (settings.recursively) {
                 queue.push(listEntry);
             }
-            if (settings.yieldDirectories) {
+            if (settings.yieldDir) {
                 yield listEntry;
             }
         } else {
@@ -408,7 +411,7 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
                     continue;
                 }
                 if (listEntry.dirent.isDirectory()) {
-                    if (settings.yieldDirectories) {
+                    if (settings.yieldDir) {
                         yield listEntry;
                     }
                     nextLevelQueue.push(listEntry);
