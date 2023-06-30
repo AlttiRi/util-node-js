@@ -88,10 +88,11 @@ export type FileListingSetting = {
     depthFirst: boolean,       // true
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
     breadthFirstRoot: boolean, // false
-    _currentDeep: number,      // 0
     stats: boolean,            // true
     /** The count of `fs.stats` executed in parallel */
     parallels: number,         // 4
+
+    _currentDeep: number,      // 0
     _map: Map<Object, Dirent[]>,
 };
 export type FileListingSettingInit = Partial<FileListingSetting>;
@@ -104,9 +105,9 @@ function getDefaultSettings(): FileListingSetting {
         yieldRoot:        true,
         depthFirst:       true,
         breadthFirstRoot: false,
-        _currentDeep:     0,
         stats:            true,
         parallels:        4,
+        _currentDeep:     0,
         _map: new Map<Object, Dirent[]>(),
         // maxDeep: 0, // todo
         // followSymbol: false,  // if a loop? // if other hard drive? //
