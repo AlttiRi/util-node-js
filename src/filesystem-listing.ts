@@ -170,6 +170,7 @@ function direntFromStats(stats: Stats, filepath: string) {
 function dummyDirent(filepath: string, isDir = false) {
     const direntDummy = new Dirent();
     direntDummy.name = path.basename(filepath);
+    (direntDummy as any)[Symbol.toStringTag] = "DirentDummy";
     (direntDummy as any).path = filepath;
     if (isDir) {
         direntDummy.isDirectory = () => true;
@@ -269,15 +270,10 @@ async function linkInfo(entry: ListEntryDirent): Promise<ListEntryDirent | ListE
         return entry;
     }
     try {
-        const symContent = await fs.readlink(entry.path);
-        const linkLocation = path.dirname(entry.path);
-        const absolutePathTo = path.resolve(linkLocation, symContent);
+        const link: LinkInfo = await readLink(entry.path);
         return {
             ...entry,
-            link: {
-                pathTo: absolutePathTo,
-                content: symContent,
-            }
+            link
         };
     } catch (err) {
         return {
@@ -324,7 +320,7 @@ async function direntsToEntries(dirents: Dirent[], settings: FileListingSetting)
 async function *_listFiles(settings: FileListingSetting, listEntry: ListEntryDirent): AsyncGenerator<ListEntryBaseEx> {
     const rootEntry = map.get(listEntry);
     if (!rootEntry) {
-        throw "No entry's Dirents found!";
+        return;
     }
     const listEntries = await direntsToEntries(rootEntry, settings);
     map.delete(listEntry);
