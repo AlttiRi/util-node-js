@@ -5,8 +5,10 @@ import {getFileInfo, listFiles} from "../index.js";
 // C:\System Volume Information
 
 console.time("listFiles");
-// const filepath = "C:\\System Volume Information";
-const filepath = "../";
+let filepath;
+// filepath = "C:\\System Volume Information";
+filepath = "../";
+
 let total = 0;
 let count = 0;
 const skipLog = true;
@@ -14,12 +16,14 @@ const hasher = crypto.createHash("md5");
 for await (const entry of listFiles({
     filepath,
     yieldDir: true,
+    // yieldRoot: false,
     depthFirst: false,
-    // stats: false
+    // stats: false,
+    // parallels: 1,
 })) {
     count++;
     hasher.update(entry.path);
-    if ("stats" in entry && !entry.stats.isDirectory()) {
+    if ("stats" in entry && entry.stats.isFile()) {
         total += entry.stats.size;
     }
 

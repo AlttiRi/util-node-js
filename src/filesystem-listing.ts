@@ -210,6 +210,8 @@ export type FileListingSetting = {
     breadthFirstRoot: boolean, // false
     _currentDeep: number,      // 0
     stats: boolean,            // true
+    /** The count of `fs.stats` executed in parallel */
+    parallels: number,         // 4
 };
 export type FileListingSettingInit = Partial<FileListingSetting>;
 
@@ -222,6 +224,7 @@ const defaultFileListingSetting: FileListingSetting = {
     breadthFirstRoot: false,
     _currentDeep:     0,
     stats:            true,
+    parallels:        4,
     // maxDeep: 0, // todo
     // followSymbol: false,  // if a loop? // if other hard drive? //
     // yieldErrors:  true,   // does it need?
@@ -426,7 +429,7 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
 
 export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStats> {
     const mutex     = new Semaphore();
-    const semaphore = new Semaphore(4);
+    const semaphore = new Semaphore(settings.parallels);
     const queue = new AsyncBufferQueue<ListEntryStats>(256);
     void (async function startAsyncIterationAsync() {
         const countLatch = new CountLatch();
