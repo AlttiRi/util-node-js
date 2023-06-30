@@ -77,7 +77,51 @@ export type StatEntryBase = StatEntry | StatEntryError;
 export type ListEntryStats = StatEntryBase & ListEntryBaseEx;
 
 
-const map = new Map<Object, Dirent[]>();
+/** An entry of the listing of the content of a directory. */
+export type FileListingSetting = {
+    /** filepath of a directory to list */
+    filepath: string,          // process.cwd()
+    recursively: boolean,      // true
+    yieldDir: boolean,         // false
+    yieldRoot: boolean,        // true
+    /** travel strategy */
+    depthFirst: boolean,       // true
+    /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
+    breadthFirstRoot: boolean, // false
+    _currentDeep: number,      // 0
+    stats: boolean,            // true
+    /** The count of `fs.stats` executed in parallel */
+    parallels: number,         // 4
+    _map: Map<Object, Dirent[]>,
+};
+export type FileListingSettingInit = Partial<FileListingSetting>;
+
+function getDefaultSettings(): FileListingSetting {
+    return {
+        filepath:         process.cwd(),
+        recursively:      true,
+        yieldDir:         false,
+        yieldRoot:        true,
+        depthFirst:       true,
+        breadthFirstRoot: false,
+        _currentDeep:     0,
+        stats:            true,
+        parallels:        4,
+        _map: new Map<Object, Dirent[]>(),
+        // maxDeep: 0, // todo
+        // followSymbol: false,  // if a loop? // if other hard drive? //
+        // yieldErrors:  true,   // does it need?
+    };
+}
+
+
+function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): ListEntryDirent {
+    const entryFilepath = path.resolve(settings.filepath, dirEntry.name);
+    return {
+        path: entryFilepath,
+        dirent: dirEntry
+    };
+}
 
 function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryStats {
     if ("errors" in entry) {
@@ -98,48 +142,6 @@ function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryS
     }
 }
 
-/** An entry of the listing of the content of a directory. */
-export type FileListingSetting = {
-    /** filepath of a directory to list */
-    filepath: string,          // process.cwd()
-    recursively: boolean,      // true
-    yieldDir: boolean,         // false
-    yieldRoot: boolean,        // true
-    /** travel strategy */
-    depthFirst: boolean,       // true
-    /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
-    breadthFirstRoot: boolean, // false
-    _currentDeep: number,      // 0
-    stats: boolean,            // true
-    /** The count of `fs.stats` executed in parallel */
-    parallels: number,         // 4
-};
-export type FileListingSettingInit = Partial<FileListingSetting>;
-
-const defaultFileListingSetting: FileListingSetting = {
-    filepath:         process.cwd(),
-    recursively:      true,
-    yieldDir:         false,
-    yieldRoot:        true,
-    depthFirst:       true,
-    breadthFirstRoot: false,
-    _currentDeep:     0,
-    stats:            true,
-    parallels:        4,
-    // maxDeep: 0, // todo
-    // followSymbol: false,  // if a loop? // if other hard drive? //
-    // yieldErrors:  true,   // does it need?
-};
-
-
-function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): ListEntryDirent {
-    const entryFilepath = path.resolve(settings.filepath, dirEntry.name);
-    return {
-        path: entryFilepath,
-        dirent: dirEntry
-    };
-}
-
 
 export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBaseEx>;
 export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<ListEntryStats>;
@@ -148,8 +150,8 @@ export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<
  * Not follows symlinks.
  */
 export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBaseEx> {
-    const settings: FileListingSetting = Object.assign({...defaultFileListingSetting}, initSettings);
-    const rootEntry: ListEntryStats = await getRootEntry(settings.filepath);
+    const settings: FileListingSetting = Object.assign({...getDefaultSettings()}, initSettings);
+    const rootEntry: ListEntryStats = await getRootEntry(settings);
 
     if (settings.yieldRoot) {
         if (!rootEntry.dirent.isDirectory() || settings.yieldDir) {
@@ -205,7 +207,7 @@ async function direntsToEntries(dirents: Dirent[], settings: FileListingSetting)
             try {
                 const dirEntries: Dirent[] = await fs.readdir(entryDirent.path, {withFileTypes: true});
                 listEntries.push(entryDirent);
-                map.set(entryDirent, dirEntries);
+                settings._map.set(entryDirent, dirEntries);
             } catch (error) {
                 const errorEntry = toListEntryDirentError(error, entryDirent);
                 listEntries.push(errorEntry);
@@ -218,12 +220,12 @@ async function direntsToEntries(dirents: Dirent[], settings: FileListingSetting)
 }
 
 async function *_listFiles(settings: FileListingSetting, listEntry: ListEntryDirent): AsyncGenerator<ListEntryBaseEx> {
-    const rootEntry = map.get(listEntry);
+    const rootEntry = settings._map.get(listEntry);
     if (!rootEntry) {
         return;
     }
     const listEntries = await direntsToEntries(rootEntry, settings);
-    map.delete(listEntry);
+    settings._map.delete(listEntry);
 
     if (settings.depthFirst) {
         if (settings.breadthFirstRoot && settings._currentDeep === 0) {
@@ -355,7 +357,7 @@ export async function *_listFilesWithStat(settings: FileListingSetting, listEntr
 }
 
 /** 100 lines of code to handle edge cases to create the root entry */
-async function getRootEntry(filepath: string): Promise<ListEntryStats> {
+async function getRootEntry({filepath, _map}: FileListingSetting): Promise<ListEntryStats> {
     let dirents: Dirent[] = [];
     filepath = path.resolve(filepath);
     let stats: Stats;
@@ -382,7 +384,7 @@ async function getRootEntry(filepath: string): Promise<ListEntryStats> {
             errors,
         };
         if (dirents.length) {
-            map.set(result, dirents);
+            _map.set(result, dirents);
         }
 
         return result;
@@ -423,7 +425,7 @@ async function getRootEntry(filepath: string): Promise<ListEntryStats> {
         }
     }
     if (dirents.length) {
-        map.set(result, dirents);
+        _map.set(result, dirents);
     }
     return result;
 
