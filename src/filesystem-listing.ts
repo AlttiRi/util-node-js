@@ -77,107 +77,7 @@ export type StatEntryBase = StatEntry | StatEntryError;
 export type ListEntryStats = StatEntryBase & ListEntryBaseEx;
 
 
-
 const map = new Map<Object, Dirent[]>();
-async function getRootEntry(filepath: string): Promise<ListEntryStats> {
-    let dirents: Dirent[] = [];
-    filepath = path.resolve(filepath);
-    let stats: Stats;
-
-    try {
-        stats = await fs.lstat(filepath);
-    } catch (err) {
-        let direntDummy = dummyDirent(filepath);
-        let errors: StatError | StatError & DirError = {
-            stats: err as IOError,
-        };
-        try {
-            dirents = await fs.readdir(filepath, {withFileTypes: true});
-            direntDummy = dummyDirent(filepath, true);
-        } catch (err) {
-            errors = {
-                ...errors,
-                readdir: err as IOError
-            };
-        }
-        const result: ListEntryStats =  {
-            path: filepath,
-            dirent: direntDummy,
-            errors,
-        };
-        if (dirents.length) {
-            map.set(result, dirents);
-        }
-
-        return result;
-    }
-
-    const direntLike = direntFromStats(stats, filepath);
-    let result: ListEntryStats = {
-        path: filepath,
-        dirent: direntLike,
-        stats,
-    };
-    if (stats.isDirectory()) {
-        try {
-            dirents = await fs.readdir(filepath, {withFileTypes: true});
-        } catch (err) {
-            result = {
-                ...result,
-                errors: {
-                    readdir: err as IOError
-                }
-            };
-        }
-    } else
-    if (stats.isSymbolicLink()) {
-        try {
-            const link: LinkInfo = await readLink(filepath);
-            result = {
-                ...result,
-                link,
-            }
-        } catch (err) {
-            result = {
-                ...result,
-                errors: {
-                    readlink: err as IOError,
-                }
-            }
-        }
-    }
-    if (dirents.length) {
-        map.set(result, dirents);
-    }
-    return result;
-}
-
-function direntFromStats(stats: Stats, filepath: string) {
-    return new Proxy({
-        name: path.basename(filepath),
-        path: filepath,
-        [Symbol.toStringTag]: "DirentLike",
-    }, {
-        get(target: any, property: keyof Stats) {
-            if (property in stats) {
-                return stats[property];
-            }
-            return target[property];
-        }
-    }) as Dirent;
-}
-
-function dummyDirent(filepath: string, isDir = false) {
-    const direntDummy = new Dirent();
-    direntDummy.name = path.basename(filepath);
-    (direntDummy as any)[Symbol.toStringTag] = "DirentDummy";
-    (direntDummy as any).path = filepath;
-    if (isDir) {
-        direntDummy.isDirectory = () => true;
-    }
-    return direntDummy;
-}
-
 
 function toListEntryStatsError(entry: ListEntryBaseEx, err: IOError): ListEntryStats {
     if ("errors" in entry) {
@@ -452,4 +352,104 @@ export async function *_listFilesWithStat(settings: FileListingSetting, listEntr
         queue.close();
     })();
     yield *queue;
+}
+
+/** 100 lines of code to handle edge cases to create the root entry */
+async function getRootEntry(filepath: string): Promise<ListEntryStats> {
+    let dirents: Dirent[] = [];
+    filepath = path.resolve(filepath);
+    let stats: Stats;
+
+    try {
+        stats = await fs.lstat(filepath);
+    } catch (err) {
+        let direntDummy = dummyDirent(filepath);
+        let errors: StatError | StatError & DirError = {
+            stats: err as IOError,
+        };
+        try {
+            dirents = await fs.readdir(filepath, {withFileTypes: true});
+            direntDummy = dummyDirent(filepath, true);
+        } catch (err) {
+            errors = {
+                ...errors,
+                readdir: err as IOError
+            };
+        }
+        const result: ListEntryStats =  {
+            path: filepath,
+            dirent: direntDummy,
+            errors,
+        };
+        if (dirents.length) {
+            map.set(result, dirents);
+        }
+
+        return result;
+    }
+
+    const direntLike = direntFromStats(stats, filepath);
+    let result: ListEntryStats = {
+        path: filepath,
+        dirent: direntLike,
+        stats,
+    };
+    if (stats.isDirectory()) {
+        try {
+            dirents = await fs.readdir(filepath, {withFileTypes: true});
+        } catch (err) {
+            result = {
+                ...result,
+                errors: {
+                    readdir: err as IOError
+                }
+            };
+        }
+    } else
+    if (stats.isSymbolicLink()) {
+        try {
+            const link: LinkInfo = await readLink(filepath);
+            result = {
+                ...result,
+                link,
+            }
+        } catch (err) {
+            result = {
+                ...result,
+                errors: {
+                    readlink: err as IOError,
+                }
+            }
+        }
+    }
+    if (dirents.length) {
+        map.set(result, dirents);
+    }
+    return result;
+
+    function direntFromStats(stats: Stats, filepath: string) {
+        return new Proxy({
+            name: path.basename(filepath),
+            path: filepath,
+            [Symbol.toStringTag]: "DirentLike",
+        }, {
+            get(target: any, property: keyof Stats) {
+                if (property in stats) {
+                    return stats[property];
+                }
+                return target[property];
+            }
+        }) as Dirent;
+    }
+
+    function dummyDirent(filepath: string, isDir = false) {
+        const direntDummy = new Dirent();
+        direntDummy.name = path.basename(filepath);
+        (direntDummy as any)[Symbol.toStringTag] = "DirentDummy";
+        (direntDummy as any).path = filepath;
+        if (isDir) {
+            direntDummy.isDirectory = () => true;
+        }
+        return direntDummy;
+    }
 }
