@@ -1,6 +1,5 @@
 import {Semaphore} from "@alttiri/util-js";
 
-//
 export class AsyncBufferQueue<T> {
     private tasks: T[];
     private done: boolean;
@@ -39,31 +38,3 @@ export class AsyncBufferQueue<T> {
     }
 }
 
-
-export class Queue {
-    length = 0;
-    push(value: any) {
-        const newLast = {
-            value,
-            next: null
-        };// @ts-ignore
-        if (!this._last) {// @ts-ignore
-            if (!this._first) {// @ts-ignore
-                this._first = newLast;
-            } else {// @ts-ignore
-                this._first.next = newLast;// @ts-ignore
-                this._last = newLast;
-            }
-        } else {// @ts-ignore
-            this._last.next = newLast;// @ts-ignore
-            this._last = newLast;
-        }
-        this.length++;
-    }
-    shift() {// @ts-ignore
-        const first = this._first?.value;// @ts-ignore
-        this._first = this._first?.next;
-        this.length--;
-        return first;
-    }
-}
