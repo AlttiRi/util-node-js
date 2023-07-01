@@ -34,34 +34,38 @@ export interface IOError extends Error {
     path:    string, // "C:\\System Volume Information"
 }
 
-type ListEntrySimplifiedTypeExample = {
+/**
+ * The simplified type example
+ * @example
+ * type ListEntrySimplifiedFullType = {
+ *     path: string,
+ *     dirent: Dirent,
+ *     stats?: Stats,
+ *     link?: LinkInfo
+ *     errors?: {
+ *         [name in "readdir" | "stats" | "readlink"]?: IOError
+ *     },
+ * };
+ */
+export type ListEntryBase = ListEntryDirent | ListEntryDirentError;
+export type ListEntryDirent = {
     path: string,
-    dirent?: Dirent,
-    stats?: Stats,
-    link?: LinkInfo
-    errors?: {
-        [name in "readdir" | "stats" | "readlink"]?: IOError
-    },
-};
-
-export type LinkInfo = {
-    pathTo: string,
-    content: string,
+    dirent: Dirent,
 }
-type DirError  = { readdir:  IOError };
-type StatError = { stats:    IOError };
-type LinkError = { readlink: IOError };
 export type ListEntryDirentError = {
     path: string,
     dirent: Dirent,
     errors: DirError,
 }
-export type ListEntryDirent = {
-    path: string,
-    dirent: Dirent,
-}
-export type ListEntryBase = ListEntryDirent | ListEntryDirentError;
 
+type DirError  = { readdir:  IOError };
+type StatError = { stats:    IOError };
+type LinkError = { readlink: IOError };
+
+export type LinkInfo = {
+    pathTo: string,
+    content: string,
+}
 
 export type LinkEntry = { link: LinkInfo };
 export type LinkEntryError = { errors: LinkError };
