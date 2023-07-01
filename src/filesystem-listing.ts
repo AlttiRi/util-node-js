@@ -2,8 +2,7 @@ import {Dirent} from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import {Stats} from "fs";
-import {CountLatch, Semaphore} from "@alttiri/util-js";
-import {AsyncBufferQueue} from "./util.js";
+import {CountLatch, Semaphore, AsyncBufferQueue} from "@alttiri/util-js";
 import {readLink} from "./filesystem.js";
 
 /**

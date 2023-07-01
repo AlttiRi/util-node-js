@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.0.0-dev.13",
+  "version": "2.0.0-dev.14",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
@@ -44,6 +44,6 @@
     "login-ghp": "npm login --registry=https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@alttiri/util-js": "1.8.4"
+    "@alttiri/util-js": "1.9.0"
   }
 }
