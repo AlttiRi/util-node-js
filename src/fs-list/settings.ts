@@ -1,5 +1,5 @@
-import {ListEntryDirent} from "./types/ListEntry";
 import {Dirent} from "node:fs";
+import {ListEntryDirent} from "./types/ListEntry";
 
 export type FileListingSettingInit = Partial<FileListingSetting>;
 
@@ -15,6 +15,7 @@ export type FileListingSetting = {
     /** breadth first strategy for the root folder (if `depthFirst` is `true`) */
     breadthFirstRoot: boolean, // false
     stats: boolean,            // true
+    bigint: boolean,           // false
     /** The count of `fs.stats` executed in parallel */
     parallels: number,         // 4
 
@@ -31,6 +32,7 @@ export function getDefaultSettings(): FileListingSetting {
         depthFirst:       true,
         breadthFirstRoot: false,
         stats:            true,
+        bigint:           false,
         parallels:        4,
         _currentDeep:     0,
         _map: new Map<ListEntryDirent, Dirent[]>(),

@@ -1,6 +1,5 @@
-import {Dirent} from "node:fs";
+import {Dirent, BigIntStats, Stats} from "node:fs";
 import {IOError} from "./IOError";
-import {Stats} from "fs";
 
 /**
  * The simplified type example
@@ -33,16 +32,20 @@ export type LinkError = { readlink: IOError };
 export type LinkInfo = {
     pathTo: string,
     content: string,
-}
+};
 
-export type LinkEntry = { link: LinkInfo };
+export type LinkEntry      = { link:   LinkInfo };
 export type LinkEntryError = { errors: LinkError };
 export type LinkEntryBase = LinkEntry | LinkEntryError;
 export type ListEntryDirentLink = ListEntryDirent & LinkEntryBase;
 
 export type ListEntryBaseEx = ListEntryBase | ListEntryDirentLink;
 
-export type StatEntry = { stats: Stats };
-export type StatEntryError = { errors: StatError };
-export type StatEntryBase = StatEntry | StatEntryError;
-export type ListEntryStats = StatEntryBase & ListEntryBaseEx;
+export type StatEntry       = { stats:  Stats };
+export type StatEntryBigInt = { stats:  BigIntStats };
+export type StatEntryError  = { errors: StatError };
+export type StatEntryBase       = StatEntry       | StatEntryError;
+export type StatEntryBaseBigInt = StatEntryBigInt | StatEntryError;
+export type ListEntryStats       = StatEntryBase       & ListEntryBaseEx;
+export type ListEntryStatsBigInt = StatEntryBaseBigInt & ListEntryBaseEx;
+export type ListEntryStatsAny = ListEntryStats | ListEntryStatsBigInt;

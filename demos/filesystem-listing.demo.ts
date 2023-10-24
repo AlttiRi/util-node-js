@@ -19,6 +19,7 @@ for await (const entry of listFiles({
     // yieldRoot: false,
     depthFirst: false,
     // stats: false,
+    // bigint: true,
     // parallels: 1,
 })) {
     count++;

@@ -10,11 +10,12 @@ import {
     ListEntryDirent,
     ListEntryBase,
     ListEntryBaseEx, // ListEntryDirentLink,
-    ListEntryStats,
+    ListEntryStats, ListEntryStatsBigInt, ListEntryStatsAny,
 } from "./types/ListEntry";
 
 
 export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBaseEx>;
+export function listFiles(initSettings: FileListingSettingInit & {bigint: true}): AsyncGenerator<ListEntryStatsBigInt>;
 export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<ListEntryStats>;
 
 /** Not follows symlinks. */
@@ -141,10 +142,10 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
     }
 }
 
-export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStats> {
+export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStatsAny> {
     const mutex     = new Semaphore();
     const semaphore = new Semaphore(settings.parallels);
-    const queue = new AsyncBufferQueue<ListEntryStats>(256);
+    const queue = new AsyncBufferQueue<ListEntryStatsAny>(256);
     void (async function startAsyncIterationAsync() {
         const countLatch = new CountLatch();
         for await (const entry of _listFiles(settings, listEntries)) {
@@ -152,10 +153,10 @@ export async function *_listFilesWithStat(settings: FileListingSetting, listEntr
             void (async function getStats() {
                 countLatch.countUp();
                 const takeMutex = mutex.acquire();
-                let statEntry: ListEntryStats;
+                let statEntry: ListEntryStatsAny;
                 try {
-                    const stats = await fs.lstat(entry.path);
-                    statEntry = {...entry, stats};
+                    const stats = await fs.lstat(entry.path, {bigint: settings.bigint});
+                    statEntry = {...entry, stats} as ListEntryStatsAny;
                 } catch (err) {
                     statEntry = toListEntryStatsError(entry, err);
                 }
