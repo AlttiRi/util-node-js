@@ -122,7 +122,8 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
                 ...settings,
                 filepath: entry.path,
                 recursively: false,
-                _currentDeep
+                yieldDir: true,
+                _currentDeep,
             }, entry)) {
                 if ("errors" in listEntry) {
                     yield listEntry;
