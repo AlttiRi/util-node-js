@@ -21,7 +21,7 @@ export function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<
 /** Not follows symlinks. */
 export async function *listFiles(initSettings: FileListingSettingInit = {}): AsyncGenerator<ListEntryBaseEx> {
     const settings: FileListingSetting = Object.assign({...getDefaultSettings()}, initSettings);
-    const rootEntry: ListEntryStats = await getRootEntry(settings);
+    const rootEntry: ListEntryStatsAny = await getRootEntry(settings);
 
     if (settings.yieldRoot) {
         if (!rootEntry.dirent.isDirectory() || settings.yieldDir) {

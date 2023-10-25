@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import {Dirent} from "node:fs";
+import {BigIntStats, Dirent} from "node:fs";
 import {Stats} from "fs";
 import {
     DirError,
@@ -9,7 +9,7 @@ import {
     ListEntryDirent,
     ListEntryDirentError,
     ListEntryDirentLink,
-    ListEntryStats, StatError
+    ListEntryStats, ListEntryStatsAny, StatError
 } from "./types/ListEntry";
 import {IOError} from "./types/IOError";
 import {FileListingSetting} from "./settings";
@@ -100,13 +100,13 @@ export async function direntsToEntries(dirents: Dirent[], settings: FileListingS
 
 
 /** 100 lines of code to handle edge cases to create the root entry */
-export async function getRootEntry({filepath, _map}: FileListingSetting): Promise<ListEntryStats> {
+export async function getRootEntry({filepath, _map, bigint}: FileListingSetting): Promise<ListEntryStatsAny> {
     let dirents: Dirent[] = [];
     filepath = path.resolve(filepath);
-    let stats: Stats;
+    let stats: Stats | BigIntStats;
 
     try {
-        stats = await fs.lstat(filepath);
+        stats = await fs.lstat(filepath, {bigint});
     } catch (err) {
         let direntDummy = dummyDirent(filepath);
         let errors: StatError | StatError & DirError = {
@@ -134,7 +134,7 @@ export async function getRootEntry({filepath, _map}: FileListingSetting): Promis
     }
 
     const direntLike = direntFromStats(stats, filepath);
-    let result: ListEntryStats = {
+    let result: ListEntryStatsAny = {
         path: filepath,
         dirent: direntLike,
         stats,
@@ -172,7 +172,7 @@ export async function getRootEntry({filepath, _map}: FileListingSetting): Promis
     }
     return result;
 
-    function direntFromStats(stats: Stats, filepath: string) {
+    function direntFromStats(stats: Stats | BigIntStats, filepath: string): Dirent {
         return new Proxy({
             name: path.basename(filepath),
             path: path.dirname(filepath),
@@ -187,7 +187,7 @@ export async function getRootEntry({filepath, _map}: FileListingSetting): Promis
         }) as Dirent;
     }
 
-    function dummyDirent(filepath: string, isDir = false) {
+    function dummyDirent(filepath: string, isDir = false): Dirent {
         const direntDummy = new Dirent();
         direntDummy.name = path.basename(filepath);
         (direntDummy as any)[Symbol.toStringTag] = "DirentDummy";

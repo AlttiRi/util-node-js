@@ -43,9 +43,11 @@ export type ListEntryBaseEx = ListEntryBase | ListEntryDirentLink;
 
 export type StatEntry       = { stats:  Stats };
 export type StatEntryBigInt = { stats:  BigIntStats };
+export type StatEntryAny    = { stats:  Stats | BigIntStats};
 export type StatEntryError  = { errors: StatError };
 export type StatEntryBase       = StatEntry       | StatEntryError;
 export type StatEntryBaseBigInt = StatEntryBigInt | StatEntryError;
+export type StatEntryBaseAny    = StatEntryAny    | StatEntryError;
 export type ListEntryStats       = StatEntryBase       & ListEntryBaseEx;
 export type ListEntryStatsBigInt = StatEntryBaseBigInt & ListEntryBaseEx;
-export type ListEntryStatsAny = ListEntryStats | ListEntryStatsBigInt;
+export type ListEntryStatsAny    = StatEntryBaseAny    & ListEntryBaseEx;
