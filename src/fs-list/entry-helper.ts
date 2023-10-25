@@ -175,7 +175,7 @@ export async function getRootEntry({filepath, _map}: FileListingSetting): Promis
     function direntFromStats(stats: Stats, filepath: string) {
         return new Proxy({
             name: path.basename(filepath),
-            path: filepath,
+            path: path.dirname(filepath),
             [Symbol.toStringTag]: "DirentLike",
         }, {
             get(target: any, property: keyof Stats) {
