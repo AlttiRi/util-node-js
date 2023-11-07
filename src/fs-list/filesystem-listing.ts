@@ -144,12 +144,19 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
 }
 
 export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStatsAny> {
+    const listFilesGen = _listFiles(settings, listEntries);
+
+    _listFilesWithStat.prototype.return = (value: any) => {
+        listFilesGen.return(undefined);
+        return {done: true, value};
+    }
+
     const mutex     = new Semaphore();
     const semaphore = new Semaphore(settings.parallels);
     const queue = new AsyncBufferQueue<ListEntryStatsAny>(256);
     void (async function startAsyncIterationAsync() {
         const countLatch = new CountLatch();
-        for await (const entry of _listFiles(settings, listEntries)) {
+        for await (const entry of listFilesGen) {
             await semaphore.acquire();
             void (async function getStats() {
                 countLatch.countUp();
