@@ -145,38 +145,36 @@ async function *breadthFirstList(settings: FileListingSetting, listEntries: List
 
 export async function *_listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStatsAny> {
     const listFilesGen = _listFiles(settings, listEntries);
-
-    _listFilesWithStat.prototype.return = (value: any) => {
-        listFilesGen.return(undefined);
-        return {done: true, value};
+    try {
+        const mutex     = new Semaphore();
+        const semaphore = new Semaphore(settings.parallels);
+        const queue = new AsyncBufferQueue<ListEntryStatsAny>(256);
+        void (async function startAsyncIterationAsync() {
+            const countLatch = new CountLatch();
+            for await (const entry of listFilesGen) {
+                await semaphore.acquire();
+                void (async function getStats() {
+                    countLatch.countUp();
+                    const takeMutex = mutex.acquire();
+                    let statEntry: ListEntryStatsAny;
+                    try {
+                        const stats = await fs.lstat(entry.path, {bigint: settings.bigint});
+                        statEntry = {...entry, stats} as ListEntryStatsAny;
+                    } catch (err) {
+                        statEntry = toListEntryStatsError(entry, err);
+                    }
+                    semaphore.release();
+                    await takeMutex;
+                    await queue.enqueue(statEntry);
+                    mutex.release();
+                    countLatch.countDown();
+                })();
+            }
+            await countLatch;
+            queue.close();
+        })();
+        yield *queue;
+    } finally {
+        await listFilesGen.return(undefined);
     }
-
-    const mutex     = new Semaphore();
-    const semaphore = new Semaphore(settings.parallels);
-    const queue = new AsyncBufferQueue<ListEntryStatsAny>(256);
-    void (async function startAsyncIterationAsync() {
-        const countLatch = new CountLatch();
-        for await (const entry of listFilesGen) {
-            await semaphore.acquire();
-            void (async function getStats() {
-                countLatch.countUp();
-                const takeMutex = mutex.acquire();
-                let statEntry: ListEntryStatsAny;
-                try {
-                    const stats = await fs.lstat(entry.path, {bigint: settings.bigint});
-                    statEntry = {...entry, stats} as ListEntryStatsAny;
-                } catch (err) {
-                    statEntry = toListEntryStatsError(entry, err);
-                }
-                semaphore.release();
-                await takeMutex;
-                await queue.enqueue(statEntry);
-                mutex.release();
-                countLatch.countDown();
-            })();
-        }
-        await countLatch;
-        queue.close();
-    })();
-    yield *queue;
 }
