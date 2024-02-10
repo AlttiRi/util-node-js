@@ -2,15 +2,15 @@ import {Dirent, BigIntStats, Stats} from "node:fs";
 import {IOError} from "./IOError";
 
 /**
- * The simplified type example
+ * The simplified type example:
  * @example
  * type ListEntrySimplifiedFullType = {
  *     path: string,
  *     dirent: Dirent,
- *     stats?: Stats,
- *     link?: LinkInfo
+ *     stats?: Stats | BigIntStats,
+ *     link?: LinkInfo,
  *     errors?: {
- *         [name in "readdir" | "stats" | "readlink"]?: IOErrorType
+ *         [name in "readdir" | "stats" | "readlink"]?: IOError
  *     },
  * };
  */
