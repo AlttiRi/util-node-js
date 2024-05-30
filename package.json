@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.0.9",
+  "version": "2.0.10-20240530",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
@@ -29,9 +29,9 @@
     "typescript": "5.2.2"
   },
   "scripts": {
-    "compile": "tsc --build",
+    "compile":       "tsc --build",
     "compile-watch": "tsc --build --watch",
-    "clean": "tsc --build --clean",
+    "clean":         "tsc --build --clean",
     "-": "",
     "publish-npm": "npm publish --registry=https://registry.npmjs.org",
     "publish-ghp": "npm publish --registry=https://npm.pkg.github.com",

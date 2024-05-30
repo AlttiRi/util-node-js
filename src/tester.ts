@@ -86,8 +86,8 @@ export class Tester {
             return;
         }
 
-        const pad1 = " ".repeat(2 - this.num.toString().length);
-        const pad2 = " ".repeat(3 - lineNum.toString().length);
+        const pad1 = " ".repeat(Math.max(0, 2 - this.num.toString().length));
+        const pad2 = " ".repeat(Math.max(0, 3 - lineNum.toString().length));
 
         if (expect === undefined) {
             console.log(ANSI_BLUE(this.num), pad1, ANSI_GRAY(lineNum), pad2, result, name);
