@@ -1,4 +1,4 @@
-import {getColoring, getAnsiColoring} from "./console-colors-core";
+import {getColoring, getAnsiColoring} from "./console-colors-core.js";
 
 export {
     getColoring,

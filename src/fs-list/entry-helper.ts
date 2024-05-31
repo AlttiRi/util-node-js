@@ -13,7 +13,7 @@ import {
 } from "./types/ListEntry";
 import {IOError} from "./types/IOError";
 import {FileListingSetting} from "./settings";
-import {readLink} from "../filesystem";
+import {readLink} from "../filesystem.js";
 
 
 export function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): ListEntryDirent {
