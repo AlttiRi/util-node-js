@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.0.11-20240531",
+  "version": "2.0.12-20240531",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
@@ -25,7 +25,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@alttiri/util-js": "1.10.0-20240531"
+    "@alttiri/util-js": "1.10.1-20240531"
   },
   "devDependencies": {
     "@types/node": "20.12.12",
