@@ -4,8 +4,8 @@ import {
     direntsToEntries,
     getRootEntry,
     toListEntryStatsError,
-} from "./entry-helper.js";
-import {FileListingSetting, FileListingSettingInit, getDefaultSettings} from "./settings.js";
+} from "./entry-helper";
+import {FileListingSetting, FileListingSettingInit, getDefaultSettings} from "./settings";
 import {
     ListEntryDirent,
     ListEntryBase,

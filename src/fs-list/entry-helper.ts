@@ -13,7 +13,7 @@ import {
 } from "./types/ListEntry";
 import {IOError} from "./types/IOError";
 import {FileListingSetting} from "./settings";
-import {readLink} from "../filesystem.js";
+import {readLink} from "../filesystem";
 
 
 export function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): ListEntryDirent {
@@ -104,6 +104,14 @@ export async function getRootEntry({filepath, _map, bigint}: FileListingSetting)
     let dirents: Dirent[] = [];
     filepath = path.resolve(filepath);
     let stats: Stats | BigIntStats;
+
+
+
+
+
+
+
+
 
     try {
         stats = await fs.lstat(filepath, {bigint});

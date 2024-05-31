@@ -1,4 +1,4 @@
-import {Tester} from "../index.js";
+import {Tester} from "../index";
 
 
 const {eq, report, t} = new Tester().destructible();

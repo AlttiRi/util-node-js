@@ -1,4 +1,4 @@
-export * from "./console-colors.js";
+export * from "./console-colors";
 
 export const saveCursorPosition    = () => process.stdout.write("\u001B[s");
 export const restoreCursorPosition = () => process.stdout.write("\u001B[u");

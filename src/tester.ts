@@ -1,4 +1,4 @@
-import {ANSI_BLUE, ANSI_GRAY, ANSI_GREEN_BOLD, ANSI_RED_BOLD} from "./console-colors.js";
+import {ANSI_BLUE, ANSI_GRAY, ANSI_GREEN_BOLD, ANSI_RED_BOLD} from "./console-colors";
 
 
 type ConstructorOpts = {
