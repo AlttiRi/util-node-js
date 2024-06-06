@@ -1,14 +1,14 @@
 import {ANSI_BLUE, ANSI_GRAY, ANSI_GREEN_BOLD, ANSI_RED_BOLD} from "./console-colors.js";
 
 
-type ConstructorOpts = {
+export type ConstructorOpts = {
     printSuccess?: boolean,
     testOnly?:     number[],
     stackDeep?:    number,
     autoReport?:   boolean,
 };
 
-type TestOpts = {
+export type TestOpts = {
     result: any,
     expect: any,
     stackDeep?: number,
@@ -18,7 +18,7 @@ type TestOpts = {
     printSuccess?: boolean,
 };
 
-type TesterMethods = {
+export type TesterMethods = {
     /** @deprecated */
     eq(name: string, result: any, expect: any): void,
     t(opt: TestOpts): void,
@@ -79,7 +79,7 @@ export class Tester {
             autoReport   = this.autoReport,
             printSuccess = this.printSuccess,
         } = opt;
-        const {filename, lineNum} = getLineNum(2 + (stackDeep ?? this.stackDeep));
+        const {filename, lineNum = 0, column = 0} = getLineNum(2 + (stackDeep ?? this.stackDeep));
 
         this.num++;
         if (this.testOnly.length && !this.testOnly.includes(this.num)) {
@@ -102,7 +102,7 @@ export class Tester {
                 console.log(ANSI_RED_BOLD(this.num), pad1, ANSI_GRAY(lineNum), pad2, ANSI_RED_BOLD("failed"), name);
                 console.log(ANSI_GRAY("expect: "), ANSI_BLUE(expect));
                 console.log(ANSI_GRAY("result: "), ANSI_RED_BOLD(result));
-                printLink && console.log(`file:///./${filename}:${lineNum}`); // Expects work dir === file location
+                printLink && console.log(`file:///./${filename}:${lineNum}:${column}`); // Expects work dir === file location
                 this.failed.push(this.num);
                 console.log(ANSI_GRAY("---"));
             }
@@ -123,16 +123,22 @@ export class Tester {
     }
 }
 
+export type LineNumType = {
+    filename?: string
+    lineNum?:  string
+    column?:   string
+};
+
 /**
- * @param {number} stackDeep
- * @return {{filename?: string, line?: string, column?: string}}
+ * @param {number} [stackDeep = 2]
+ * @return {LineNumType}
  */
-function getLineNum(stackDeep = 2) {
+function getLineNum(stackDeep: number = 2): LineNumType {
     const errorLines = new Error().stack!.split("\n");
     if (errorLines[0] === "Error") {
         errorLines.shift();
     }
-    const fileLine = errorLines[stackDeep]?.split("/").pop();
+    const fileLine = errorLines[stackDeep]?.split(/[\\\/]/).pop();
     const {filename, line, column} = fileLine?.match(/(?<filename>.+):(?<line>\d+):(?<column>\d+)/)?.groups || {};
     return {filename, lineNum: line, column};
 }
