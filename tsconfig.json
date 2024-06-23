@@ -22,9 +22,9 @@
 
     "allowJs": false,
 
-    "noEmit": false,
-    "sourceMap": true,
-    "declaration": true
+    "noEmit":      false,
+    "declaration": true,
+    "sourceMap":   false,
   },
   "include": [
     "index.ts",
