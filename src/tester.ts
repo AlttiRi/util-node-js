@@ -1,5 +1,8 @@
 import {ANSI_BLUE, ANSI_GRAY, ANSI_GREEN_BOLD, ANSI_RED_BOLD} from "./console-colors.js";
+import path from "node:path";
 
+
+const CWD = process.cwd();
 
 export type ConstructorOpts = {
     printSuccess?: boolean,
@@ -79,7 +82,7 @@ export class Tester {
             autoReport   = this.autoReport,
             printSuccess = this.printSuccess,
         } = opt;
-        const {filename, lineNum = 0, column = 0} = getLineNum(2 + (stackDeep ?? this.stackDeep));
+        const {relFilePath, lineNum = 0, column = 0} = getLineNum(2 + (stackDeep ?? this.stackDeep));
 
         this.num++;
         if (this.testOnly.length && !this.testOnly.includes(this.num)) {
@@ -102,7 +105,7 @@ export class Tester {
                 console.log(ANSI_RED_BOLD(this.num), pad1, ANSI_GRAY(lineNum), pad2, ANSI_RED_BOLD("failed"), name);
                 console.log(ANSI_GRAY("expect: "), ANSI_BLUE(expect));
                 console.log(ANSI_GRAY("result: "), ANSI_RED_BOLD(result));
-                printLink && console.log(`file:///./${filename}:${lineNum}:${column}`); // Expects work dir === file location
+                printLink && console.log(`file:///./${relFilePath}:${lineNum}:${column}`);
                 this.failed.push(this.num);
                 console.log(ANSI_GRAY("---"));
             }
@@ -124,9 +127,9 @@ export class Tester {
 }
 
 export type LineNumType = {
-    filename?: string
-    lineNum?:  string
-    column?:   string
+    relFilePath: string
+    lineNum?:    string
+    column?:     string
 };
 
 /**
@@ -138,7 +141,12 @@ function getLineNum(stackDeep: number = 2): LineNumType {
     if (errorLines[0] === "Error") {
         errorLines.shift();
     }
-    const fileLine = errorLines[stackDeep]?.split(/[\\\/]/).pop();
-    const {filename, line, column} = fileLine?.match(/(?<filename>.+):(?<line>\d+):(?<column>\d+)/)?.groups || {};
-    return {filename, lineNum: line, column};
+    const fileLine = errorLines[stackDeep];
+    const groups = fileLine?.match(/( \(| )(?<filepath>\S+):(?<line>\d+):(?<column>\d+)\)?$/)?.groups;
+    if (!groups) {
+        return {relFilePath: ""};
+    }
+    const {filepath, line, column} = groups;
+    const relFilePath = path.relative(CWD, filepath).replaceAll("\\", "/");
+    return {relFilePath, lineNum: line, column};
 }

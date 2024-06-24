@@ -5,7 +5,7 @@ const {eq, report, t} = new Tester().destructible();
 
 eq("first", "4545", "4545");
 eq("second", "asd", "asd");
-eq("xxx bad", "asd", "asd1");
+eq("xxx bad", "asd", "asd1"); /* will fail */
 report();
 
 console.log("---");
@@ -24,7 +24,7 @@ t({
     result: "qqq",
     expect: "qqq"
 });
-t({
+/* will fail */ t({
     result: "qqq",
     expect: "qqq1"
 });
