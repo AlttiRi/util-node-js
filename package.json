@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.1.1-20240725",
+  "version": "2.1.2-20240725",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
@@ -10,26 +10,20 @@
   "homepage": "https://github.com/alttiri/util-node-js",
   "license": "MIT",
   "type": "module",
+  "main": "./index.js",
+  "typings": "index.d.ts",
   "files": [
     "src/**/*.js",
     "src/**/*.d.ts",
     "index.js",
     "index.d.ts"
   ],
-  "main": "./index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/alttiri/util-node-js.git"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "@alttiri/util-js": "1.13.1-20240725"
-  },
-  "devDependencies": {
-    "@types/node": "20.12.12",
-    "typescript": "5.5.4"
   },
   "scripts": {
     "compile-ts":       "tsc --build",
@@ -44,5 +38,12 @@
     "---": "",
     "login-npm": "npm login --registry=https://registry.npmjs.org",
     "login-ghp": "npm login --registry=https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "@alttiri/util-js": "1.13.1-20240725"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.12",
+    "typescript": "5.5.4"
   }
 }
