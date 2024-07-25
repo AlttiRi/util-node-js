@@ -10,9 +10,9 @@ import {
     ListEntryDirentError,
     ListEntryDirentLink,
     ListEntryStats, ListEntryStatsAny, StatError
-} from "./types/ListEntry";
-import {IOError} from "./types/IOError";
-import {FileListingSetting} from "./settings";
+} from "./types/ListEntry.js";
+import {IOError} from "./types/IOError.js";
+import {FileListingSetting} from "./settings.js";
 import {readLink} from "../filesystem.js";
 
 
@@ -48,7 +48,7 @@ export async function toLinkInfo(entry: ListEntryDirent): Promise<ListEntryDiren
         return {
             ...entry,
             errors: {
-                readlink: err
+                readlink: err as IOError
             }
         };
     }
@@ -88,7 +88,7 @@ export async function direntsToEntries(dirents: Dirent[], settings: FileListingS
                 listEntries.push(entryDirent);
                 settings._map.set(entryDirent, dirEntries);
             } catch (error) {
-                const errorEntry = toListEntryDirentError(error, entryDirent);
+                const errorEntry = toListEntryDirentError(error as IOError, entryDirent);
                 listEntries.push(errorEntry);
             }
         } else {

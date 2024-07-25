@@ -1,5 +1,5 @@
 import {Dirent, BigIntStats, Stats} from "node:fs";
-import {IOError} from "./IOError";
+import {IOError} from "./IOError.js";
 
 /**
  * The simplified type example:

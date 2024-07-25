@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import {getFileInfo, listFiles} from "../index";
+import {getFileInfo, listFiles} from "@/index";
 
 // console.log(await getFileInfo("C:\\Documents and Settings"));
 // C:\System Volume Information

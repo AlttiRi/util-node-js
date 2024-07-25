@@ -2,7 +2,7 @@ import {
     ANSI_BLUE, ANSI_CYAN, ANSI_GRAY, ANSI_GREEN, ANSI_GREEN_BOLD,
     ANSI_RED_BOLD, COL_ORANGE, COL_VIOLET, COL_GRAY,
     getColoring, getAnsiColoring,
-} from "../index";
+} from "@/index";
 
 
 const _ANSI_RED                 = getAnsiColoring("red");

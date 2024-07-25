@@ -1,5 +1,5 @@
 import {Dirent} from "node:fs";
-import {ListEntryDirent} from "./types/ListEntry";
+import {ListEntryDirent} from "./types/ListEntry.js";
 
 export type FileListingSettingInit = Partial<FileListingSetting>;
 

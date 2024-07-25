@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.1.0-20240624",
+  "version": "2.1.1-20240725",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
@@ -25,19 +25,20 @@
     "access": "public"
   },
   "dependencies": {
-    "@alttiri/util-js": "1.10.2-20240603"
+    "@alttiri/util-js": "1.13.1-20240725"
   },
   "devDependencies": {
     "@types/node": "20.12.12",
     "typescript": "5.5.2"
   },
   "scripts": {
-    "compile":       "tsc --build",
-    "compile-watch": "tsc --build --watch",
-    "clean":         "tsc --build --clean",
+    "compile-ts":       "tsc --build",
+    "compile-ts-watch": "tsc --build --watch",
+    "clean-ts":         "tsc --build --clean",
     "-": "",
-    "publish-npm": "npm publish --registry=https://registry.npmjs.org",
-    "publish-ghp": "npm publish --registry=https://npm.pkg.github.com",
+    "test-publish": "tsc --build && npm pack",
+    "publish-npm":  "tsc --build && npm publish --registry=https://registry.npmjs.org",
+    "publish-ghp":  "tsc --build && npm publish --registry=https://npm.pkg.github.com",
     "--": "",
     "unpublish-npm": "npm unpublish @alttiri/util-node-js@1.2.3 --registry=https://registry.npmjs.org",
     "---": "",

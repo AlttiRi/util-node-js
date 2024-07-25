@@ -5,13 +5,14 @@ import {
     ListEntryBase,
     ListEntryBaseEx, // ListEntryDirentLink,
     ListEntryStats, ListEntryStatsBigInt, ListEntryStatsAny,
-} from "./types/ListEntry";
+} from "./types/ListEntry.js";
 import {
     direntsToEntries,
     getRootEntry,
     toListEntryStatsError,
 } from "./entry-helper.js";
 import {FileListingSetting, FileListingSettingInit, getDefaultSettings} from "./settings.js";
+import {IOError} from "./types/IOError.js";
 
 
 export function listFiles(initSettings: FileListingSettingInit & {stats: false}): AsyncGenerator<ListEntryBaseEx>;
@@ -219,7 +220,7 @@ export async function *_listFilesWithStat(settings: FileListingSetting, listEntr
                         const stats = await fs.lstat(entry.path, {bigint: settings.bigint});
                         statEntry = {...entry, stats} as ListEntryStatsAny;
                     } catch (err) {
-                        statEntry = toListEntryStatsError(entry, err);
+                        statEntry = toListEntryStatsError(entry, err as IOError);
                     }
                     semaphore.release();
                     await takeMutex;
