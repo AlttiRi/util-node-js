@@ -1,6 +1,6 @@
 {
   "name": "@alttiri/util-node-js",
-  "version": "2.1.2-20240725",
+  "version": "2.1.3-20240728",
   "description": "Some Node.js util functions for personal use",
   "keywords": [
     "color",
