@@ -4,7 +4,8 @@ Some Node.js util functions.
 
 Mostly it's a draft version for personal use.
 
-## util functions
+## *.d.ts
+
 ```ts
 type ANSIColor = "black" | "red" | "green" | "yellow" | "blue" | "magenta" | "cyan" | "white";
 type ColoringFunc = (text: any) => string;
@@ -120,7 +121,8 @@ export type LineNumType = {
 };
 ```
 
-## fs-list
+## *.d.ts (fs-list)
+
 ```ts
 export declare function toListEntryDirent(dirEntry: Dirent, settings: FileListingSetting): ListEntryDirent;
 export declare function toListEntryDirentError(error: IOError, listEntry: ListEntryDirent): ListEntryDirentError;
@@ -220,7 +222,8 @@ export type FileListingSetting = {
 export declare function getDefaultSettings(): FileListingSetting;
 ```
 
-## fs-list types
+## *.d.ts (fs-list types)
+
 ```ts
 /**
  * The error object that happens while scanning.
