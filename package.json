@@ -40,7 +40,7 @@
     "login-ghp": "npm login --registry=https://npm.pkg.github.com"
   },
   "dependencies": {
-    "@alttiri/util-js": "1.13.1-20240725"
+    "@alttiri/util-js": "1.14.0-20240821"
   },
   "devDependencies": {
     "@types/node": "20.12.12",
