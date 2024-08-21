@@ -181,9 +181,8 @@ The return object's keys info:
     - "stats"
     - "readlink"
 \```
-
-@note `listFiles` does not follow symlinks.
-@options
+ @note `listFiles` does not follow symlinks.
+ @options
 \```js
  - filepath:    string  = process.cwd(), // filepath of a (root) directory to list
  - recursively: boolean = true,
@@ -195,7 +194,7 @@ The return object's keys info:
  - bigint:      boolean = false,        // (use only if `stats` is `true`)
  - parallels:   number  = 4,            // count of `fs.stats` executed in parallel
 \```
-*/
+ */
 export declare function listFiles(initSettings: FileListingSettingInit): AsyncGenerator<ListEntryStats>;
 
 export declare function _listFilesWithStat(settings: FileListingSetting, listEntries: ListEntryDirent): AsyncGenerator<ListEntryStatsAny>;
